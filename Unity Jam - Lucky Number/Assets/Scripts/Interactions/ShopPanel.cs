@@ -23,6 +23,7 @@ namespace UnityJam.LuckyNumber.Interactions
         [SerializeField] private TextMeshProUGUI[] slotNames;
         [SerializeField] private TextMeshProUGUI[] slotDescriptions;
         [SerializeField] private TextMeshProUGUI[] slotPrices;
+        [SerializeField] private Color cantAffordColor = Color.red;
 
         // TODO - remove once the run controller calls Open(money).
         [SerializeField] private int testMoney = 100;
@@ -35,9 +36,11 @@ namespace UnityJam.LuckyNumber.Interactions
         private readonly Random rng = new Random();
         private Item[] offered;
         private bool[] sold;
+        private Color priceColor; // the price text's normal color, read from the scene
 
         private void Awake()
         {
+            priceColor = slotPrices[0].color;
             for (int i = 0; i < slotButtons.Length; i++)
             {
                 int slot = i; // copy, so each button's listener keeps its own slot number
@@ -86,13 +89,15 @@ namespace UnityJam.LuckyNumber.Interactions
             Refresh();
         }
 
-        // Grey out anything sold or too expensive.
+        // Grey out anything sold or too expensive, and turn unaffordable prices red.
         private void Refresh()
         {
             moneyText.text = "$" + Money;
             for (int i = 0; i < offered.Length; i++)
             {
-                slotButtons[i].interactable = !sold[i] && Money >= Price(i);
+                bool canAfford = Money >= Price(i);
+                slotButtons[i].interactable = !sold[i] && canAfford;
+                slotPrices[i].color = sold[i] || canAfford ? priceColor : cantAffordColor;
             }
         }
 
