@@ -83,6 +83,55 @@ namespace UnityJam.LuckyNumber.Tests
             Assert.Ignore("TODO - Dyse");
         }
 
+        [Test]
+        public void AssignAiLuckyNumbers_UniqueAndNotPlayers()
+        {
+            var rng = new Random(42);
+            for (int player = 1; player <= DiceMath.Faces; player++)
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    int[] ai = DiceMath.AssignAiLuckyNumbers(rng, player, 3);
+                    Assert.That(ai, Has.Length.EqualTo(3));
+                    Assert.That(ai, Is.Unique);
+                    Assert.That(ai, Has.No.Member(player));
+                    Assert.That(ai, Is.All.InRange(1, DiceMath.Faces));
+                }
+            }
+        }
+
+        [Test]
+        public void PickAiBet_RandomBetsAtChance_NeverOwnNumber()
+        {
+            var rng = new Random(42);
+            const int aiLucky = 2;
+            const float chance = 0.15f;
+            int away = 0;
+            for (int i = 0; i < Rolls; i++)
+            {
+                if (DiceMath.PickAiBet(rng, aiLucky, chance) != aiLucky) away++;
+            }
+            // If random bets could land on aiLucky, this would come out near 0.125 (0.15 * 5/6) and fail.
+            Assert.That((double)away / Rolls, Is.EqualTo(chance).Within(Tolerance));
+        }
+
+        [Test]
+        public void OpenNumbers_TwoLeftWithThreeAi()
+        {
+            // TODO - with the player and 3 AIs each holding a lucky number, exactly 2 numbers should be open,
+            // and none of them should be anyone's lucky number.
+            // Delete the Assert.Ignore line when done.
+            Assert.Ignore("TODO - Dyse");
+        }
+
+        [Test]
+        public void PickAiBet_ZeroChance_AlwaysOwnNumber()
+        {
+            // TODO - an AI that never bets randomly should always bet its own lucky number.
+            // Delete the Assert.Ignore line when done.
+            Assert.Ignore("TODO - Dyse");
+        }
+
         // Simulator: run by hand from the Test Runner, results go to the console.
         [Test, Explicit]
         public void Simulate()

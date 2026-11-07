@@ -32,26 +32,35 @@ namespace UnityJam.LuckyNumber.Core
         public static int RollLoaded(Random rng, int luckyNumber, float loadedChance)
         {
             if (rng.NextDouble() < loadedChance) return luckyNumber;
+            return RollOtherFace(rng, luckyNumber); // missed the load
+        }
 
-            // Missed the load: pick one of the other 5 faces evenly.
-            // Roll 1..5, then shift anything at or above luckyNumber up by one, so luckyNumber is skipped.
+        // Picks one of the 5 faces other than skip, evenly.
+        // Roll 1..5, then shift anything at or above skip up by one, so skip is skipped.
+        private static int RollOtherFace(Random rng, int skip)
+        {
             int roll = rng.Next(1, Faces);
-            return roll >= luckyNumber ? roll + 1 : roll; //returns face value of the roll 1-6
+            return roll >= skip ? roll + 1 : roll; //returns face value of the roll 1-6
         }
 
         // unique numbers per AI, none should match to the players
         public static int[] AssignAiLuckyNumbers(Random rng, int playerLucky, int aiCount)
         {
-            // TODO - math, return lowest free numbers as a placeholder.
-            var result = new int[aiCount];
-            int next = 1;
-            for (int i = 0; i < aiCount; i++)
+            var freeNums = new List<int>();
+            for (int n = 1; n <= Faces; n++)
             {
-                if (next == playerLucky) next++;
-                result[i] = next++;
+                if (n != playerLucky) freeNums.Add(n);
             }
-            return result;
+
+            // Shuffle the free numbers randomly, then give the first aiCount to the AIs.
+            for (int i = freeNums.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (freeNums[i], freeNums[j]) = (freeNums[j], freeNums[i]);
+            }
+            return freeNums.GetRange(0, aiCount).ToArray();
         }
+        
         //number that were not chosen as 'lucky numbers'
         public static int[] OpenNumbers(int playerLucky, int[] aiLucky)
         {
@@ -63,10 +72,10 @@ namespace UnityJam.LuckyNumber.Core
             return open.ToArray();
         }
 
-        //mostly bets their lucky number, sometimes a random face.
+        //mostly bets their lucky number, sometimes a random other face (never their own).
         public static int PickAiBet(Random rng, int aiLucky, float randomBetChance)
         {
-            // TODO - math, returns lucjy number as a placeholder.
+            if (rng.NextDouble() < randomBetChance) return RollOtherFace(rng, aiLucky);
             return aiLucky;
         }
 
