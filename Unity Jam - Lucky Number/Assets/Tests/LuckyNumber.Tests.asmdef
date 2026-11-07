@@ -1,6 +1,5 @@
 {
-    "name": "LuckyNumber.Tests.EditMode",
-    "rootNamespace": "UnityJam.LuckyNumber.Tests",
+    "name": "LuckyNumber.Tests",
     "references": ["UnityEngine.TestRunner", "UnityEditor.TestRunner", "LuckyNumber.Core"],
     "includePlatforms": ["Editor"],
     "overrideReferences": true,

@@ -1,0 +1,193 @@
+using System;
+using NUnit.Framework;
+using UnityJam.LuckyNumber.Core;
+
+public class DiceTests
+{
+    private const int Rolls = 60000;
+    private const double Tolerance = 0.01;
+
+    // Fraction of rolls that landed on each face. base 1 array, so index 0 is unused, faces[3] means a 3.
+    private static double[] Frequencies(Func<int> roll)
+    {
+        var faces = new double[DiceMath.Faces + 1];
+        for (int i = 0; i < Rolls; i++) faces[roll()]++;
+        for (int n = 1; n <= DiceMath.Faces; n++) faces[n] /= Rolls;
+        return faces;
+    }
+
+    [Test]
+    public void RollClean_AlwaysInRange()
+    {
+        var rng = new Random(42);
+        for (int i = 0; i < 10000; i++)
+        {
+            Assert.That(DiceMath.RollClean(rng), Is.InRange(1, 6));
+        }
+    }
+
+    [Test]
+    public void RollClean_FacesAreEven()
+    {
+        var rng = new Random(42);
+        var faces = Frequencies(() => DiceMath.RollClean(rng));
+        for (int n = 1; n <= DiceMath.Faces; n++)
+        {
+            Assert.That(faces[n], Is.EqualTo(1.0 / 6).Within(Tolerance), $"face {n}");
+        }
+    }
+
+    [Test]
+    public void RollLoaded_HitsLuckyAtLoadedChance_OtherFacesEven()
+    {
+        var rng = new Random(42);
+        const int lucky = 4;
+        const float chance = 0.5f;
+        var faces = Frequencies(() => DiceMath.RollLoaded(rng, lucky, chance));
+
+        Assert.That(faces[lucky], Is.EqualTo(chance).Within(Tolerance), "lucky face");
+        for (int n = 1; n <= DiceMath.Faces; n++)
+        {
+            if (n == lucky) continue;
+            Assert.That(faces[n], Is.EqualTo((1 - chance) / 5).Within(Tolerance), $"face {n}");
+        }
+    }
+
+    [Test]
+    public void RollLoaded_ZeroChance_NeverLucky()
+    {
+        var rng = new Random(42);
+        for (int i = 0; i < 10000; i++)
+        {
+            int roll = DiceMath.RollLoaded(rng, 6, 0f);
+            Assert.That(roll, Is.InRange(1, 5));
+        }
+    }
+
+    [Test]
+    public void RollLoaded_FullChance_AlwaysLucky()
+    {
+        // TODO - a fully loaded die should always land on the lucky number.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    [Test]
+    public void SameSeed_SameSequence()
+    {
+        // TODO - the same seed should always give the same rolls.
+        // Bonus: make it fail on purpose to prove it can catch a bug.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    [Test]
+    public void AssignAiLuckyNumbers_UniqueAndNotPlayers()
+    {
+        var rng = new Random(42);
+        for (int player = 1; player <= DiceMath.Faces; player++)
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                int[] ai = DiceMath.AssignAiLuckyNumbers(rng, player, 3);
+                Assert.That(ai, Has.Length.EqualTo(3));
+                Assert.That(ai, Is.Unique);
+                Assert.That(ai, Has.No.Member(player));
+                Assert.That(ai, Is.All.InRange(1, DiceMath.Faces));
+            }
+        }
+    }
+
+    [Test]
+    public void PickAiBet_RandomBetsAtChance_NeverOwnNumber()
+    {
+        var rng = new Random(42);
+        const int aiLucky = 2;
+        const float chance = 0.15f;
+        int away = 0;
+        for (int i = 0; i < Rolls; i++)
+        {
+            if (DiceMath.PickAiBet(rng, aiLucky, chance) != aiLucky) away++;
+        }
+        // If random bets could land on aiLucky, this would come out near 0.125 (0.15 * 5/6) and fail.
+        Assert.That((double)away / Rolls, Is.EqualTo(chance).Within(Tolerance));
+    }
+
+    [Test]
+    public void OpenNumbers_TwoLeftWithThreeAi()
+    {
+        // TODO - with the player and 3 AIs each holding a lucky number, exactly 2 numbers should be open,
+        // and none of them should be anyone's lucky number.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    [Test]
+    public void PickAiBet_ZeroChance_AlwaysOwnNumber()
+    {
+        // TODO - an AI that never bets randomly should always bet its own lucky number.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    // Player's lucky is 3, second is null unless a test needs it.
+    private const int PlayerLucky = 3;
+
+    [Test]
+    public void ResolvePot_SoloLuckyWin_PaysPotTimesMultiplier()
+    {
+        int[] bets = { 3, 1, 2, 4 };
+        var result = DiceMath.ResolvePot(3, bets, 40, PlayerLucky, null, 2f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(80));
+        Assert.That(result.Carryover, Is.EqualTo(0));
+        Assert.That(result.WinnerCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ResolvePot_UnevenSplit_RemainderCarriesOver()
+    {
+        // Open number 5, player + 2 AIs bet it: 50 / 3 = 16 each, 2 left over.
+        int[] bets = { 5, 5, 5, 4 };
+        var result = DiceMath.ResolvePot(5, bets, 50, PlayerLucky, null, 2f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(16));
+        Assert.That(result.Carryover, Is.EqualTo(2));
+        Assert.That(result.WinnerCount, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void ResolvePot_NoWinner_WholePotCarries()
+    {
+        int[] bets = { 3, 1, 2, 4 };
+        var result = DiceMath.ResolvePot(6, bets, 40, PlayerLucky, null, 2f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(0));
+        Assert.That(result.Carryover, Is.EqualTo(40));
+        Assert.That(result.WinnerCount, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void ResolvePot_SecondNumberWin_PaysSecondMultiplier()
+    {
+        // TODO - give the player a second number, roll it, and check the payout uses secondMultiplier.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    [Test]
+    public void ResolvePot_OnlyAiWins_PlayerGetsNothing_NothingCarries()
+    {
+        // TODO - when only an AI hits, the player gets nothing and the AI's share leaves the pot.
+        // Delete the Assert.Ignore line when done.
+        Assert.Ignore("TODO - Dyse");
+    }
+
+    // Simulator: run by hand from the Test Runner, results go to the console.
+    [Test, Explicit]
+    public void Simulate()
+    {
+        // TODO - math, will enable us to rest thousand sof rolls at at time to tune the balance
+        // Log reach-target %, broke %, average final money.
+    }
+}
