@@ -19,6 +19,7 @@ namespace UnityJam.LuckyNumber.Core
 
     // All dice, lucky number, and pot math happens here
     // Pass in a seeded Random, any bugged results are repeatable
+    // use c# rng, not unity, to maintain ability to unit test
     public static class DiceMath
     {
         public const int Faces = 6;
@@ -84,12 +85,29 @@ namespace UnityJam.LuckyNumber.Core
         // bets[0] is the player, bets[1..] are the AIs.
         // multiple winners = split pot / winnerCount, remainder carries
         // no winner = whole pot carries over
-        // Player's share is multiplied on a lucky nuumber hit; the extra comes from the house.
-        public static PotResult ResolvePot(int rolled, int[] bets, int pot,
-            int playerLucky, int? playerSecond, float luckyMultiplier, float secondMultiplier)
+        // Player's share is multiplied on a lucky (or second) number hit; the extra comes from the house.
+        // pot = carryover + this roll's antes, the caller builds it each time (no persistent game state)
+        public static PotResult ResolvePot(int rolledNum, int[] bets, int pot,
+            int playerLuckyNum, int? playerSecond, float luckyMultiplier, float secondMultiplier)
         {
-            // TODO - math, nobody wins, pot carries over for placehlder
-            return new PotResult(0, pot, 0);
+            int winners = 0;
+            foreach (int bet in bets)
+            {
+                if (bet == rolledNum) winners++;
+            }
+            if (winners == 0) return new PotResult(0, pot, 0);
+
+            // AI shares just leave the pot (AI money isn't tracked). Only the remainder carries.
+            int share = pot / winners;
+            int carryover = pot % winners;
+            if (bets[0] != rolledNum) return new PotResult(0, carryover, winners);
+
+            float multiplier = 1f;
+            if (rolledNum == playerLuckyNum) multiplier = luckyMultiplier;
+            else if (rolledNum == playerSecond) multiplier = secondMultiplier;
+
+            // rounds down in the case of remainders from splitting
+            return new PotResult((int)(share * multiplier), carryover, winners);
         }
     }
 }

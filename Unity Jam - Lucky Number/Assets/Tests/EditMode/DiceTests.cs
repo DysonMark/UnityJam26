@@ -132,6 +132,59 @@ namespace UnityJam.LuckyNumber.Tests
             Assert.Ignore("TODO - Dyse");
         }
 
+        // Player's lucky is 3, second is null unless a test needs it.
+        private const int PlayerLucky = 3;
+
+        [Test]
+        public void ResolvePot_SoloLuckyWin_PaysPotTimesMultiplier()
+        {
+            int[] bets = { 3, 1, 2, 4 };
+            var result = DiceMath.ResolvePot(3, bets, 40, PlayerLucky, null, 2f, 1.5f);
+
+            Assert.That(result.PlayerPayout, Is.EqualTo(80));
+            Assert.That(result.Carryover, Is.EqualTo(0));
+            Assert.That(result.WinnerCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ResolvePot_UnevenSplit_RemainderCarriesOver()
+        {
+            // Open number 5, player + 2 AIs bet it: 50 / 3 = 16 each, 2 left over.
+            int[] bets = { 5, 5, 5, 4 };
+            var result = DiceMath.ResolvePot(5, bets, 50, PlayerLucky, null, 2f, 1.5f);
+
+            Assert.That(result.PlayerPayout, Is.EqualTo(16));
+            Assert.That(result.Carryover, Is.EqualTo(2));
+            Assert.That(result.WinnerCount, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void ResolvePot_NoWinner_WholePotCarries()
+        {
+            int[] bets = { 3, 1, 2, 4 };
+            var result = DiceMath.ResolvePot(6, bets, 40, PlayerLucky, null, 2f, 1.5f);
+
+            Assert.That(result.PlayerPayout, Is.EqualTo(0));
+            Assert.That(result.Carryover, Is.EqualTo(40));
+            Assert.That(result.WinnerCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void ResolvePot_SecondNumberWin_PaysSecondMultiplier()
+        {
+            // TODO - give the player a second number, roll it, and check the payout uses secondMultiplier.
+            // Delete the Assert.Ignore line when done.
+            Assert.Ignore("TODO - Dyse");
+        }
+
+        [Test]
+        public void ResolvePot_OnlyAiWins_PlayerGetsNothing_NothingCarries()
+        {
+            // TODO - when only an AI hits, the player gets nothing and the AI's share leaves the pot.
+            // Delete the Assert.Ignore line when done.
+            Assert.Ignore("TODO - Dyse");
+        }
+
         // Simulator: run by hand from the Test Runner, results go to the console.
         [Test, Explicit]
         public void Simulate()
