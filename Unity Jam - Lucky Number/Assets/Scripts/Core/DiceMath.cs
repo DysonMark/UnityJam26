@@ -37,6 +37,7 @@ namespace UnityJam.LuckyNumber.Core
 
         // Picks one of the 5 faces other than skip, evenly.
         // Roll 1..5, then shift anything at or above skip up by one, so skip is skipped.
+        // Used by RollLoaded (skip param value should player's lucky) and PickAiBet (skip param value should AI's own lucky).
         private static int RollOtherFace(Random rng, int skip)
         {
             int roll = rng.Next(1, Faces);
@@ -75,6 +76,7 @@ namespace UnityJam.LuckyNumber.Core
         //mostly bets their lucky number, sometimes a random other face (never their own).
         public static int PickAiBet(Random rng, int aiLucky, float randomBetChance)
         {
+            // Random bet: passing aiLucky as skip is what stops the AI randomly picking its own number.
             if (rng.NextDouble() < randomBetChance) return RollOtherFace(rng, aiLucky);
             return aiLucky;
         }
