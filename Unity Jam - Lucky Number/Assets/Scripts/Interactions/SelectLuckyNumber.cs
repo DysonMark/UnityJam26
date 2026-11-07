@@ -26,7 +26,7 @@ namespace UnityJam.LuckyNumber.Interactions
         private bool hovered;
         private Vector3 baseScale;
 
-        public int Number => number;
+        public int LuckyNumber => number;
 
         private void Awake()
         {
