@@ -184,10 +184,74 @@ public class DiceTests
     }
 
     // Simulator: run by hand from the Test Runner, results go to the console.
+    // Uses the real tuning asset, so it balances the numbers the game actually uses.
+    // TODO add suspicion logic, TODO add in item logic
     [Test, Explicit]
     public void Simulate()
     {
-        // TODO - math, will enable us to rest thousand sof rolls at at time to tune the balance
-        // Log reach-target %, broke %, average final money.
+        const int tables = 5000;
+        var cfg = UnityEditor.AssetDatabase.LoadAssetAtPath<TuningConfig>(
+            "Assets/ScriptableObjects/TuningConfig-Default.asset");
+        Assert.That(cfg, Is.Not.Null, "TuningConfig-Default.asset not found");
+
+        UnityEngine.Debug.Log($"Simulating {tables} tables: start {cfg.startingMoney}, target {cfg.cashTarget}, " +
+                              $"ante {cfg.ante}, {cfg.rollsPerTable} rolls, loadedChance {cfg.loadedChance}");
+
+        SimulateStrategy(cfg, tables, false, false, "Clean, own lucky ");
+        SimulateStrategy(cfg, tables, true, false, "Loaded, own lucky");
+        SimulateStrategy(cfg, tables, false, true, "Clean, open number");
+        // TODO no balance assert yet. Add "clean reaches target < 5%" once suspicion is in and the numbers are tuned.
+    }
+
+    // Plays many tables with one strategy, logs the results.
+    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name)
+    {
+        var rng = new Random(42);
+        int reached = 0, broke = 0;
+        long totalMoney = 0;
+        for (int t = 0; t < tables; t++)
+        {
+            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen);
+            if (hitTarget) reached++;
+            else if (money < cfg.ante) broke++;
+            totalMoney += money;
+        }
+        UnityEngine.Debug.Log($"{name}: reached {(double)reached / tables:P1}, broke {(double)broke / tables:P1}, " +
+                              $"avg money {(double)totalMoney / tables:F0}");
+    }
+
+    // One table: ante, bet, roll, pay out, until out of rolls, broke, or target hit.
+    // Player has no second number here.
+    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen)
+    {
+        int playerLucky = rng.Next(1, DiceMath.Faces + 1);
+        int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
+        int playerBet = betOpen ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : playerLucky;
+
+        int money = cfg.startingMoney;
+        int carryover = 0;
+        var bets = new int[aiLucky.Length + 1];
+        for (int roll = 0; roll < cfg.rollsPerTable; roll++)
+        {
+            if (money < cfg.ante) return (money, false);
+            money -= cfg.ante;
+            int pot = carryover + cfg.ante * bets.Length;
+
+            bets[0] = playerBet;
+            for (int i = 0; i < aiLucky.Length; i++)
+                bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance);
+
+            int rolled = loaded
+                ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance)
+                : DiceMath.RollClean(rng);
+
+            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, null,
+                cfg.luckyMultiplier, cfg.secondMultiplier);
+            money += result.PlayerPayout;
+            carryover = result.Carryover;
+
+            if (money >= cfg.cashTarget) return (money, true);
+        }
+        return (money, false);
     }
 }
