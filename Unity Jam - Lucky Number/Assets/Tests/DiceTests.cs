@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using UnityEngine.Rendering;
 using UnityJam.LuckyNumber.Core;
 
 public class DiceTests
@@ -67,18 +70,33 @@ public class DiceTests
     [Test]
     public void RollLoaded_FullChance_AlwaysLucky()
     {
-        // TODO - a fully loaded die should always land on the lucky number.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        var rng = new Random(42);
+        const int lucky = 3;
+        const float chance = 1f;
+        for (int i = 0; i < 10000; i++)
+        {
+            int roll = DiceMath.RollLoaded(rng, lucky, chance);
+            Assert.That(roll, Is.EqualTo(3));
+        }
     }
 
     [Test]
     public void SameSeed_SameSequence()
     {
-        // TODO - the same seed should always give the same rolls.
-        // Bonus: make it fail on purpose to prove it can catch a bug.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        // To fail the test, change the seed number.
+
+        var rng = new Random(42);
+        var sameRng = new Random(42);
+        const int lucky = 2;
+        const float chance = 0.5f;
+
+        for (int i = 0; i < 10000; i++)
+        {
+            int roll = DiceMath.RollLoaded(rng, lucky, chance);
+            int secondRoll = DiceMath.RollLoaded(sameRng, lucky, chance);
+            Assert.That(roll, Is.EqualTo(secondRoll));
+        }
+
     }
 
     [Test]
@@ -116,10 +134,19 @@ public class DiceTests
     [Test]
     public void OpenNumbers_TwoLeftWithThreeAi()
     {
-        // TODO - with the player and 3 AIs each holding a lucky number, exactly 2 numbers should be open,
-        // and none of them should be anyone's lucky number.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        int[] aiLuckyNumbers = { 2, 3, 4 };
+        const int playerLucky = 1;
+
+        var open = DiceMath.OpenNumbers(playerLucky, aiLuckyNumbers).ToList();
+
+        Assert.That(open, Has.Count.EqualTo(2));
+
+        Assert.That(open, Has.No.Member(playerLucky));
+        foreach(int ai in aiLuckyNumbers)
+        {
+            Assert.That(open, Has.No.Member(ai));
+        }
+
     }
 
     [Test]
