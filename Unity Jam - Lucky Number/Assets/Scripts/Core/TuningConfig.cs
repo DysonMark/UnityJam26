@@ -15,7 +15,11 @@ namespace UnityJam.LuckyNumber.Core
         [Range(0f, 1f)] public float loadedChance = 0.5f;
         [Range(0f, 1f)] public float aiRandomBetChance = 0.15f;
 
-        // indexed by (int)Item, same order as the Item enum. TODO replave placehlder pricing
+        // indexed by (int)Item, same order as the Item enum. TODO replace placeholder pricing
         public int[] itemPrices = { 60, 50, 60, 60, 50, 30, 30, 30 };
+
+        // Item effects, added to the table's values. TODO replace placeholder numbers
+        [Range(0f, 1f)] public float heavierLoadBonus = 0.15f; // added to loadedChance
+        public float highRollerBonus = 0.5f;                   // added to luckyMultiplier
     }
 }

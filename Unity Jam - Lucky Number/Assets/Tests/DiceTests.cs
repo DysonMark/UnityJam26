@@ -220,6 +220,45 @@ public class DiceTests
         UnityEngine.Object.DestroyImmediate(cfg);
     }
 
+    [Test]
+    public void WithItems_HeavierLoad_RaisesLoadedChance_TableUnchanged()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HeavierLoad });
+
+        Assert.That(cfg.loadedChance, Is.EqualTo(table.loadedChance + table.heavierLoadBonus).Within(0.0001f));
+        Assert.That(table.loadedChance, Is.EqualTo(0.5f), "the table's own config should not change");
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void WithItems_HeavierLoad_StacksButCapsAtOne()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HeavierLoad, Item.HeavierLoad, Item.HeavierLoad, Item.HeavierLoad });
+
+        Assert.That(cfg.loadedChance, Is.EqualTo(1f));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void WithItems_HighRoller_RaisesLuckyMultiplier_OnlyThat()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HighRoller });
+
+        Assert.That(cfg.luckyMultiplier, Is.EqualTo(table.luckyMultiplier + table.highRollerBonus).Within(0.0001f));
+        Assert.That(cfg.loadedChance, Is.EqualTo(table.loadedChance));
+        Assert.That(cfg.secondMultiplier, Is.EqualTo(table.secondMultiplier));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
     // Simulator: run by hand from the Test Runner, results go to the console.
     // Uses the real tuning asset, so it balances the numbers the game actually uses.
     // TODO add suspicion logic, TODO add in item logic

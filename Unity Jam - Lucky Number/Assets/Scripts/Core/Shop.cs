@@ -17,8 +17,8 @@ namespace UnityJam.LuckyNumber.Core
         RabbitsFoot,
     }
 
-    // Item data and the shop pick. Prices live in TuningConfig SO
-    // TODO - Effects,  money/dice ones apply to a copy of TuningConfig SO and suspicion rukes
+    // Item data, the shop pick, and item effects. Prices and effect amounts live in TuningConfig SO
+    // TODO - suspicion effects, and one-time items
     public static class Shop
     {
         public const int Offered = 3;
@@ -51,6 +51,29 @@ namespace UnityJam.LuckyNumber.Core
         };
 
         public static bool IsOneTime(Item item) => item >= Item.BribeTheDealer;
+
+        // Copy of the table's config with every owned item applied. The table's own config is never changed.
+        // Owning an item twice applies it twice (TODO carrying items between tables is an open question).
+        // Caller should Destroy the copy when the table ends.
+        public static TuningConfig WithItems(TuningConfig table, IEnumerable<Item> owned)
+        {
+            TuningConfig cfg = UnityEngine.Object.Instantiate(table);
+            foreach (Item item in owned)
+            {
+                switch (item)
+                {
+                    case Item.HeavierLoad:
+                        cfg.loadedChance = Math.Min(1f, cfg.loadedChance + cfg.heavierLoadBonus);
+                        break;
+                    case Item.HighRoller:
+                        cfg.luckyMultiplier += cfg.highRollerBonus;
+                        break;
+                    // NOTE Second Number item changes nothing here: the game picks it from OpenNumbers
+                    // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier.
+                }
+            }
+            return cfg;
+        }
 
         // 3 different items, at least one permanent + one one-time, in random order
         public static Item[] Pick(Random rng)
