@@ -14,5 +14,8 @@ namespace UnityJam.LuckyNumber.Core
         public float secondMultiplier = 1.5f;
         [Range(0f, 1f)] public float loadedChance = 0.5f;
         [Range(0f, 1f)] public float aiRandomBetChance = 0.15f;
+
+        // indexed by (int)Item, same order as the Item enum. TODO replave placehlder pricing
+        public int[] itemPrices = { 60, 50, 60, 60, 50, 30, 30, 30 };
     }
 }
