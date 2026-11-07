@@ -30,6 +30,7 @@ namespace UnityJam.LuckyNumber.Meters
         {
             luckyNumber = number;
             hasLuckyNumber = true;
+            Debug.Log($"Lucky number set to {luckyNumber}");
         }
 
         private void Update()
@@ -45,8 +46,10 @@ namespace UnityJam.LuckyNumber.Meters
 
         private void TryRollLoaded()
         {
-            int roll = DiceMath.RollLoaded(rng, luckyNumber, loadedChance);            
-         
+            int roll = DiceMath.RollLoaded(rng, luckyNumber, loadedChance);
+            
+            Debug.Log("Number that was rolled this round: " + roll);
+
             if (roll == luckyNumber)
             {
                 AddSuspicion(suspicionPerLuckyRoll);
