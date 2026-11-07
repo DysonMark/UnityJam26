@@ -31,8 +31,12 @@ namespace UnityJam.LuckyNumber.Core
         //loadedChance increases luckyNumber, otherwise uniform over the other faces.
         public static int RollLoaded(Random rng, int luckyNumber, float loadedChance)
         {
-            // TODO - math, return a regular clean roll as a placeholder
-            return RollClean(rng);
+            if (rng.NextDouble() < loadedChance) return luckyNumber;
+
+            // Missed the load: pick one of the other 5 faces evenly.
+            // Roll 1..5, then shift anything at or above luckyNumber up by one, so luckyNumber is skipped.
+            int roll = rng.Next(1, Faces);
+            return roll >= luckyNumber ? roll + 1 : roll; //returns face value of the roll 1-6
         }
 
         // unique numbers per AI, none should match to the players
