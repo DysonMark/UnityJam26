@@ -5,7 +5,6 @@ using UnityEngine.UI;
 using Random = System.Random;
 
 // Shows 3 items from Shop.Pick, buying takes money in and hands it back through Money.
-// TODO The run controller calls Open(money) after a table and reads Money when the shop closes
 public class ShopPanel : MonoBehaviour
 {
     [SerializeField] private GameObject uiPanel;
@@ -22,9 +21,6 @@ public class ShopPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI[] slotDescriptions;
     [SerializeField] private TextMeshProUGUI[] slotPrices;
     [SerializeField] private Color cantAffordColor = Color.red;
-
-    // TODO - remove once the run controller calls Open(money).
-    [SerializeField] private int testMoney = 100;
 
     public UnityEvent<Item> onBought;
     public UnityEvent onClosed;

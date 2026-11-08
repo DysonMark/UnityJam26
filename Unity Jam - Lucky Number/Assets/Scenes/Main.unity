@@ -4359,6 +4359,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 607ad108e2d2722e82557bfa56514184, type: 2}
   - {fileID: 11400000, guid: 65bd6eaa7045e5f95614017630cc7b2c, type: 2}
   infoPanel: {fileID: 1822331351}
+  shop: {fileID: 9188606662749371128}
+  endScreen: {fileID: 5199870771364134626}
   payAnteButton: {fileID: 701609087}
   cleanButton: {fileID: 1757253930}
   loadedButton: {fileID: 1104155800}
@@ -9516,6 +9518,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c00900ac666b3af2942af786a2a96be, type: 3}
+--- !u!114 &5199870771364134626 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2453390117752199357, guid: 8c00900ac666b3af2942af786a2a96be, type: 3}
+  m_PrefabInstance: {fileID: 5199870771364134625}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91602a8918465bd6ab1bf39191955242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Interactions.EndScreen
 --- !u!1001 &9188606662749371127
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9973,6 +9986,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+--- !u!114 &9188606662749371128 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+  m_PrefabInstance: {fileID: 9188606662749371127}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb686b50e37e054068c75cf2a1ec878e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Interactions.ShopPanel
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

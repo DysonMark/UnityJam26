@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private SuspicionMeter suspicionMeter;
         [SerializeField] private TuningConfig[] tables;
         [SerializeField] private TableInfoPanel infoPanel;
+        [SerializeField] private ShopPanel shop;
+        [SerializeField] private EndScreen endScreen;
         [SerializeField] private Button payAnteButton;
         [SerializeField] private Button cleanButton;
         [SerializeField] private Button loadedButton;
@@ -28,19 +31,27 @@ namespace UnityJam.LuckyNumber.TurnFlow
         //Private variables
 
         private int tableIndex;
-        private TuningConfig config => tables[tableIndex];
+        private TuningConfig config; // this table's config with owned items applied
+        private readonly List<Item> owned = new List<Item>(); // bought in the shop, last for the next table only
         private System.Random rng;
         private int money;
         private int pot;
         private int rollsLeft;
         private int playerBet;
         private int playerLucky;
+        private int? playerSecond; // only with the Second Number item, one of the open numbers
         private int[] aiLucky = new int[AiCount];
         private int[] aiBets = new int[AiCount];
         private int[] openNumbers;
         private bool usedLoaded;
         private int rolledNumber;
 
+
+        private void Awake()
+        {
+            shop.onBought.AddListener(owned.Add);
+            shop.onClosed.AddListener(NextTable);
+        }
 
         private void Start()
         {
@@ -59,6 +70,9 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void StartTable()
         {
+            if (config != null) Destroy(config);
+            config = Shop.WithItems(tables[tableIndex], owned);
+
             money = config.startingMoney;
             rollsLeft = config.rollsPerTable;
             pot = 0;
@@ -85,6 +99,9 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
+            // TODO Second Number is auto-picked for now, decide if player should choose it from the open numbers?
+            playerSecond = owned.Contains(Item.SecondNumber) ? openNumbers[rng.Next(openNumbers.Length)] : (int?)null;
+            if (playerSecond != null) Debug.Log($"Second number: {playerSecond}"); // TODO show it in the UI
 
             AIBets();
         }
@@ -168,7 +185,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             int[] bets = { playerBet, aiBets[0], aiBets[1], aiBets[2] };
 
-            PotResult result = DiceMath.ResolvePot(rolledNumber, bets, pot, playerLucky, null, config.luckyMultiplier, config.secondMultiplier);
+            PotResult result = DiceMath.ResolvePot(rolledNumber, bets, pot, playerLucky, playerSecond, config.luckyMultiplier, config.secondMultiplier);
 
             money += result.PlayerPayout;
             pot = result.Carryover;
@@ -187,36 +204,42 @@ namespace UnityJam.LuckyNumber.TurnFlow
             {
                 if (tableIndex < tables.Length - 1)
                 {
-                    tableIndex++;
-                    StartTable();
-                    Debug.Log($"Table cleared! Now on table {tableIndex + 1}");
+                    owned.Clear(); // items expire with the table they were bought for
+                    shop.Open(money);
                 }
                 else
                 {
-                    Debug.Log("All tables cleared - you win!");
+                    endScreen.Show(EndReason.Win, money);
                 }
                 return;
             }
 
-            if (suspicionMeter.IsCaught) 
-            { 
-                Debug.Log("Caught cheating!"); 
-                return; 
+            if (suspicionMeter.IsCaught)
+            {
+                endScreen.Show(EndReason.Caught, money);
+                return;
             }
 
-            if (rollsLeft <= 0) 
-            { 
-                Debug.Log("Out of rolls"); 
-                return; 
+            if (rollsLeft <= 0)
+            {
+                endScreen.Show(EndReason.OutOfRolls, money);
+                return;
             }
 
-            if (money < config.ante) 
-            { 
-                Debug.Log("Out of money"); 
-                return; 
+            if (money < config.ante)
+            {
+                endScreen.Show(EndReason.Broke, money);
+                return;
             }
 
             payAnteButton.interactable = true;
+        }
+
+        // Shop closed, money resets in StartTable so leftover shop money doesn't carry
+        private void NextTable()
+        {
+            tableIndex++;
+            StartTable();
         }
     }
 }
