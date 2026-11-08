@@ -152,9 +152,13 @@ public class DiceTests
     [Test]
     public void PickAiBet_ZeroChance_AlwaysOwnNumber()
     {
-        // TODO - an AI that never bets randomly should always bet its own lucky number.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        var rng = new Random(67);
+
+        const int aiLuckyNum = 6;
+        var bet = DiceMath.PickAiBet(rng, aiLuckyNum, 0);
+
+        Assert.That(bet, Is.EqualTo(aiLuckyNum));
+
     }
 
     // Player's lucky is 3, second is null unless a test needs it.
