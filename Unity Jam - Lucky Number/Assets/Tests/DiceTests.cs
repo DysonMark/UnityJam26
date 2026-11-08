@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using UnityJam.LuckyNumber.Core;
 
 public class DiceTests
 {
