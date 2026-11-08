@@ -1,29 +1,39 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UI;
 
 namespace UnityJam.LuckyNumber.TurnFlow
 {
     public class TurnManager : MonoBehaviour
     {
-        [SerializeField] TuningConfig config;
-        [SerializeField] TableInfoPanel infoPanel;
-        [SerializeField] Button payAnteButton;
-        [SerializeField] GameObject luckyNumberPanel;
-        [SerializeField] GameObject betPanel;
-        [SerializeField] int seed = 0;
+        [SerializeField] private TuningConfig config;
+        [SerializeField] private TableInfoPanel infoPanel;
+        [SerializeField] private Button payAnteButton;
+        [SerializeField] private Button cleanButton;
+        [SerializeField] private Button loadedButton;
+        [SerializeField] private GameObject luckyNumberPanel;
+        [SerializeField] private GameObject betPanel;
+        [SerializeField] private GameObject diePanel;
+        [SerializeField] private TMP_Text rollResultText;
+        [SerializeField] private int seed = 0;
+        [SerializeField] private float showResultAfterTime = 1.5f;
 
         const int AiCount = 3;
 
-        System.Random rng;
-        int money;
-        int pot;
-        int rollsLeft;
-        int playerBet;
-        int playerLucky;
-        int[] aiLucky = new int[AiCount];
-        int[] aiBets = new int[AiCount];
-        int[] openNumbers;
+        //Private variables
+
+        private System.Random rng;
+        private int money;
+        private int pot;
+        private int rollsLeft;
+        private int playerBet;
+        private int playerLucky;
+        private int[] aiLucky = new int[AiCount];
+        private int[] aiBets = new int[AiCount];
+        private int[] openNumbers;
+        private bool usedLoaded;
+        private int rolledNumber;
 
 
         private void Start()
@@ -32,14 +42,12 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             money = config.startingMoney;
             rollsLeft = config.rollsPerTable;
+
             luckyNumberPanel.SetActive(false);
             betPanel.SetActive(false);
-            UpdatePanel();
+            diePanel.SetActive(false);
 
-            if (playerLucky == 0)
-                luckyNumberPanel.SetActive(true);
-            else
-                AIBets();
+            UpdatePanel();
         }
 
         public void OnPlayerPickedLucky(int number)
@@ -81,6 +89,11 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             payAnteButton.interactable = false;
             UpdatePanel();
+
+            if (playerLucky == 0)
+                luckyNumberPanel.SetActive(true);
+            else
+                AIBets();
         }
 
         public void OnPlayerBet(int number)
@@ -88,6 +101,29 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerBet = number;
             betPanel.SetActive(false);
             UpdatePanel();
+
+            //TODO: check if hasItem after
+            diePanel.SetActive(true);
+        }
+
+        public void ChooseClean() => Roll(false);
+        public void ChooseLoaded() => Roll(true);
+        private void Roll(bool loaded)
+        {
+            usedLoaded = loaded;
+
+            rolledNumber = loaded ? DiceMath.RollLoaded(rng, playerLucky, config.loadedChance) : DiceMath.RollClean(rng);
+
+            StartCoroutine(ShowResult());
+        }
+
+        private IEnumerator ShowResult()
+        {
+            cleanButton.interactable = false;
+            loadedButton.interactable = false;
+            rollResultText.text = $"Rolled: {rolledNumber}";
+            yield return new WaitForSeconds(showResultAfterTime);
+            diePanel.SetActive(false);
         }
     }
 }
