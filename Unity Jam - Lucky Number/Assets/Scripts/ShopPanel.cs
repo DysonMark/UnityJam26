@@ -8,6 +8,7 @@ using Random = System.Random;
 // TODO The run controller calls Open(money) after a table and reads Money when the shop closes
 public class ShopPanel : MonoBehaviour
 {
+    [SerializeField] private GameObject uiPanel;
     [SerializeField] private TuningConfig config;
     [SerializeField] private TextMeshProUGUI moneyText;
 
@@ -44,12 +45,7 @@ public class ShopPanel : MonoBehaviour
             slotButtons[i].onClick.AddListener(() => Buy(slot));
         }
     }
-
-    private void Start()
-    {
-        Open(testMoney);
-    }
-
+    
     public void Open(int money)
     {
         Money = money;
@@ -64,13 +60,13 @@ public class ShopPanel : MonoBehaviour
             slotPrices[i].text = "$" + Price(i);
         }
         Refresh();
-        gameObject.SetActive(true);
+        uiPanel.SetActive(true);
     }
 
     // TODO Hook to a "Leave shop" button.
     public void Close()
     {
-        gameObject.SetActive(false);
+        uiPanel.SetActive(false);
         onClosed?.Invoke();
     }
 

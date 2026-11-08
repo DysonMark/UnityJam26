@@ -15,6 +15,7 @@ public enum EndReason
 // TODO The run controller calls Show(reason, money) when the win/lose checks end the run.
 public class EndScreen : MonoBehaviour
 {
+    [SerializeField] private GameObject uiPanel;
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private TextMeshProUGUI moneyText;
@@ -41,17 +42,12 @@ public class EndScreen : MonoBehaviour
         "Insert  witty line about how you ran out of rolls here",
     };
 
-    private void Start()
-    {
-        Show(testReason, testMoney);
-    }
-
     public void Show(EndReason reason, int money)
     {
         titleText.text = Titles[(int)reason];
         messageText.text = Messages[(int)reason];
         moneyText.text = "$" + money;
-        gameObject.SetActive(true);
+        uiPanel.SetActive(true);
     }
 
     // TODO Button hook ups

@@ -1306,6 +1306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb686b50e37e054068c75cf2a1ec878e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Interactions.ShopPanel
+  uiPanel: {fileID: 3072797112083492099}
   config: {fileID: 11400000, guid: 7db0df8e22f77166d8b2f231e36865f8, type: 2}
   moneyText: {fileID: 578318836725638185}
   itemIcons:
