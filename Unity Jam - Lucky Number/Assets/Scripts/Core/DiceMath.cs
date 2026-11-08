@@ -116,4 +116,7 @@ public static class DiceMath
     }
 
     public static bool IsCaught(float suspicion) => suspicion >= 1f;
+
+    // Bribe the Dealer
+    public static float LowerSuspicion(float suspicion, float amount) => Math.Clamp(suspicion - amount, 0f, 1f);
 }

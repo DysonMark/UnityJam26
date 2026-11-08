@@ -11,7 +11,7 @@ public class ShopPanel : MonoBehaviour
     [SerializeField] private TuningConfig config;
     [SerializeField] private TextMeshProUGUI moneyText;
 
-    // Indexed by (int)Item, same order as the Item enum (8 entries).
+    // Indexed by (int)Item, same order as the Item enum (7 entries).
     [SerializeField] private Sprite[] itemIcons;
 
     // One entry per slot, Shop.Offered (3) long, same order in every array.

@@ -318,6 +318,7 @@ public class DiceTests
         var cfg = Shop.WithItems(table, new[] { Item.HighRoller });
 
         Assert.That(cfg.luckyMultiplier, Is.EqualTo(table.luckyMultiplier + table.highRollerBonus).Within(0.0001f));
+        Assert.That(cfg.suspicionPerLuckyRoll, Is.EqualTo(table.suspicionPerLuckyRoll + table.highRollerSuspicion).Within(0.0001f));
         Assert.That(cfg.loadedChance, Is.EqualTo(table.loadedChance));
         Assert.That(cfg.secondMultiplier, Is.EqualTo(table.secondMultiplier));
 
@@ -325,79 +326,141 @@ public class DiceTests
         UnityEngine.Object.DestroyImmediate(table);
     }
 
+    [Test]
+    public void WithItems_SteadyHands_LowersSuspicionPerHit_NotBelowZero()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.SteadyHands });
+        Assert.That(cfg.suspicionPerLuckyRoll, Is.EqualTo(table.suspicionPerLuckyRoll - table.steadyHandsCut).Within(0.0001f));
+        UnityEngine.Object.DestroyImmediate(cfg);
+
+        table.steadyHandsCut = 1f;
+        cfg = Shop.WithItems(table, new[] { Item.SteadyHands });
+        Assert.That(cfg.suspicionPerLuckyRoll, Is.EqualTo(0f));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void WithItems_ExtraRoll_AddsOneRoll()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.ExtraRoll });
+
+        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable + 1));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void LowerSuspicion_Bribe_DropsButNotBelowZero()
+    {
+        Assert.That(DiceMath.LowerSuspicion(0.8f, 0.4f), Is.EqualTo(0.4f).Within(1e-5));
+        Assert.That(DiceMath.LowerSuspicion(0.2f, 0.4f), Is.EqualTo(0f));
+    }
+
     // Simulator: run by hand from the Test Runner, results go to the console.
-    // Uses the real tuning asset, so it balances the numbers the game actually uses.
-    // TODO add suspicion logic, TODO add in item logic
+    // Plays whole runs over the real table assets, suspicion carries between tables like in the game.
+    // Items: the strategy buys the same item in every shop, so it applies to tables 2 and 3.
     [Test, Explicit]
     public void Simulate()
     {
-        const int tables = 5000;
-        var cfg = UnityEditor.AssetDatabase.LoadAssetAtPath<TuningConfig>(
-            "Assets/ScriptableObjects/TuningConfig-Default.asset");
-        Assert.That(cfg, Is.Not.Null, "TuningConfig-Default.asset not found");
+        const int runs = 5000;
+        var tables = new TuningConfig[3];
+        for (int i = 0; i < tables.Length; i++)
+        {
+            tables[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<TuningConfig>(
+                $"Assets/ScriptableObjects/TuningConfig-Table{i + 1}.asset");
+            Assert.That(tables[i], Is.Not.Null, $"TuningConfig-Table{i + 1}.asset not found");
+            var c = tables[i];
+            UnityEngine.Debug.Log($"Table {i + 1}: start {c.startingMoney}, target {c.cashTarget}, ante {c.ante}, " +
+                                  $"{c.rollsPerTable} rolls, loadedChance {c.loadedChance}, suspicion/hit {c.suspicionPerLuckyRoll}");
+        }
 
-        UnityEngine.Debug.Log($"Simulating {tables} tables: start {cfg.startingMoney}, target {cfg.cashTarget}, " +
-                              $"ante {cfg.ante}, {cfg.rollsPerTable} rolls, loadedChance {cfg.loadedChance}");
-
-        SimulateStrategy(cfg, tables, false, false, "Clean, own lucky ");
-        SimulateStrategy(cfg, tables, true, false, "Loaded, own lucky");
-        SimulateStrategy(cfg, tables, false, true, "Clean, open number");
-        SimulateStrategy(cfg, tables, false, true, "Clean, second number", hasSecond: true);
-        // TODO no balance assert yet. Add "clean reaches target < 5%" once suspicion is in and the numbers are tuned.
+        SimulateRun(tables, runs, false, false, null, "Clean");
+        SimulateRun(tables, runs, true, false, null, "Always loaded");
+        SimulateRun(tables, runs, true, true, null, "Careful loaded");
+        foreach (Item item in Enum.GetValues(typeof(Item)))
+            SimulateRun(tables, runs, true, true, item, $"Careful + {item}");
+        // TODO no balance assert yet. Add "clean wins < 5%" once the numbers are tuned.
     }
 
-    // Plays many tables with one strategy, logs the results.
-    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name,
-        bool hasSecond = false)
+    // Plays many runs with one strategy, logs how they ended.
+    // careful = only load while one more suspicious hit can't get you caught.
+    private static void SimulateRun(TuningConfig[] tables, int runs, bool loaded, bool careful, Item? item, string name)
     {
         var rng = new Random(42);
-        int reached = 0, broke = 0;
-        long totalMoney = 0;
-        for (int t = 0; t < tables; t++)
+        var owned = item == null ? new Item[0] : new[] { item.Value };
+        int wins = 0, caught = 0, broke = 0, outOfRolls = 0, cleared = 0;
+        for (int r = 0; r < runs; r++)
         {
-            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen, hasSecond);
-            if (hitTarget) reached++;
-            else if (money < cfg.ante) broke++;
-            totalMoney += money;
+            float suspicion = 0f;
+            string outcome = "target";
+            for (int t = 0; t < tables.Length && outcome == "target"; t++)
+            {
+                var cfg = Shop.WithItems(tables[t], t == 0 ? new Item[0] : owned);
+                outcome = PlayTable(rng, cfg, loaded, careful, t == 0 ? new Item[0] : owned, ref suspicion);
+                UnityEngine.Object.DestroyImmediate(cfg);
+                if (outcome == "target") cleared++;
+            }
+            if (outcome == "target") wins++;
+            else if (outcome == "caught") caught++;
+            else if (outcome == "broke") broke++;
+            else outOfRolls++;
         }
-        UnityEngine.Debug.Log($"{name}: reached {(double)reached / tables:P1}, broke {(double)broke / tables:P1}, " +
-                              $"avg money {(double)totalMoney / tables:F0}");
+        UnityEngine.Debug.Log($"{name}: win {(double)wins / runs:P1}, caught {(double)caught / runs:P1}, " +
+                              $"broke {(double)broke / runs:P1}, out of rolls {(double)outOfRolls / runs:P1}, " +
+                              $"avg tables cleared {(double)cleared / runs:F2}");
     }
 
-    // One table: ante, bet, roll, pay out, until out of rolls, broke, or target hit.
-    // hasSecond = player owns Second Number: the open number they bet on is their second, paying secondMultiplier.
-    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen,
-        bool hasSecond)
+    // One table, same order as TurnManager: ante, bet, roll, pay out, suspicion, then target / caught / rolls / broke.
+    // Second Number: when the strategy doesn't load, it bets its second number instead of its lucky.
+    // Returns "target", "caught", "broke" or "rolls".
+    private static string PlayTable(Random rng, TuningConfig cfg, bool loaded, bool careful, Item[] owned,
+        ref float suspicion)
     {
         int playerLucky = rng.Next(1, DiceMath.Faces + 1);
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
-        int playerBet = betOpen ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : playerLucky;
-        int? playerSecond = hasSecond ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : (int?)null;
+        int[] open = DiceMath.OpenNumbers(playerLucky, aiLucky);
+        int? playerSecond = Array.IndexOf(owned, Item.SecondNumber) >= 0 ? open[rng.Next(open.Length)] : (int?)null;
+        if (Array.IndexOf(owned, Item.BribeTheDealer) >= 0) suspicion = DiceMath.LowerSuspicion(suspicion, cfg.bribeAmount);
+        bool rabbitsFoot = Array.IndexOf(owned, Item.RabbitsFoot) >= 0;
 
         int money = cfg.startingMoney;
-        int carryover = 0;
+        int pot = 0;
         var bets = new int[aiLucky.Length + 1];
         for (int roll = 0; roll < cfg.rollsPerTable; roll++)
         {
-            if (money < cfg.ante) return (money, false);
             money -= cfg.ante;
-            int pot = carryover + cfg.ante * bets.Length;
+            pot += cfg.ante * bets.Length;
 
-            bets[0] = playerBet;
+            bool load = loaded && (!careful || rabbitsFoot || suspicion + cfg.suspicionPerLuckyRoll < 1f);
+            bets[0] = load || playerSecond == null ? playerLucky : playerSecond.Value;
             for (int i = 0; i < aiLucky.Length; i++)
                 bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance);
 
-            int rolled = loaded
-                ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance)
-                : DiceMath.RollClean(rng);
+            int rolled = load ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance) : DiceMath.RollClean(rng);
 
             var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, playerSecond,
                 cfg.luckyMultiplier, cfg.secondMultiplier);
             money += result.PlayerPayout;
-            carryover = result.Carryover;
+            pot = result.Carryover;
 
-            if (money >= cfg.cashTarget) return (money, true);
+            float rise = cfg.suspicionPerLuckyRoll;
+            if (rabbitsFoot && load && rolled == playerLucky)
+            {
+                rise = 0f;
+                rabbitsFoot = false;
+            }
+            suspicion = DiceMath.AddSuspicion(suspicion, load, rolled, playerLucky, rise);
+
+            if (money >= cfg.cashTarget) return "target";
+            if (DiceMath.IsCaught(suspicion)) return "caught";
+            if (roll == cfg.rollsPerTable - 1) return "rolls";
+            if (money < cfg.ante) return "broke";
         }
-        return (money, false);
+        return "rolls";
     }
 }

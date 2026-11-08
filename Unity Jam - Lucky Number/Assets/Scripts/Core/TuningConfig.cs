@@ -16,9 +16,12 @@ public class TuningConfig : ScriptableObject
     [Range(0f, 1f)] public float suspicionPerLuckyRoll = 0.2f; // loaded roll hits lucky, caught at 1
 
     // indexed by (int)Item, same order as the Item enum. TODO replace placeholder pricing
-    public int[] itemPrices = { 60, 50, 60, 60, 50, 30, 30, 30 };
+    public int[] itemPrices = { 60, 50, 60, 60, 30, 30, 30 };
 
     // Item effects, added to the table's values. TODO replace placeholder numbers
     [Range(0f, 1f)] public float heavierLoadBonus = 0.15f; // added to loadedChance
     public float highRollerBonus = 0.5f;                   // added to luckyMultiplier
+    [Range(0f, 1f)] public float highRollerSuspicion = 0.05f; // added to suspicionPerLuckyRoll
+    [Range(0f, 1f)] public float steadyHandsCut = 0.1f;       // taken off suspicionPerLuckyRoll
+    [Range(0f, 1f)] public float bribeAmount = 0.4f;          // taken off suspicion when the table starts
 }

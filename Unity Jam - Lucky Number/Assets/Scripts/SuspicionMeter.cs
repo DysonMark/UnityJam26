@@ -21,5 +21,11 @@ namespace UnityJam.LuckyNumber.Meters
             suspicion = DiceMath.AddSuspicion(suspicion, usedLoaded, rolled, luckyNumber, perLuckyRoll);
             slider.value = suspicion;
         }
+
+        public void Lower(float amount)
+        {
+            suspicion = DiceMath.LowerSuspicion(suspicion, amount);
+            slider.value = suspicion;
+        }
     }
 }
