@@ -8,20 +8,63 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] TuningConfig config;
         [SerializeField] TableInfoPanel infoPanel;
         [SerializeField] Button payAnteButton;
+        [SerializeField] GameObject luckyNumberPanel;
+        [SerializeField] GameObject betPanel;
+        [SerializeField] int seed = 0;
 
+        const int AiCount = 3;
+
+        System.Random rng;
         int money;
         int pot;
         int rollsLeft;
+
+        int playerLucky;
+        int[] aiLucky = new int[AiCount];
+        int[] aiBets = new int[AiCount];
+        int[] openNumbers;
+
+
         private void Start()
         {
+            rng = seed == 0 ? new System.Random() : new System.Random(seed);
+
             money = config.startingMoney;
             rollsLeft = config.rollsPerTable;
+            luckyNumberPanel.SetActive(false);
+            betPanel.SetActive(false);
             UpdatePanel();
+
+            if (playerLucky == 0)
+                luckyNumberPanel.SetActive(true);
+            else
+                AIBets();
+        }
+
+        public void OnPlayerPickedLucky(int number)
+        {
+            playerLucky = number;
+            luckyNumberPanel.SetActive(false);
+
+            aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
+            openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
+
+            AIBets();
+        }
+
+        private void AIBets()
+        {
+            for (int i = 0; i < AiCount; i++)
+                aiBets[i] = DiceMath.PickAiBet(rng, aiLucky[i], config.aiRandomBetChance);
+
+            UpdatePanel();
+            betPanel.SetActive(true);
         }
 
         private void UpdatePanel()
         {
             infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, config.table);
+            infoPanel.RefreshAI(aiLucky, aiBets);
         }
 
         public void PayAnte()

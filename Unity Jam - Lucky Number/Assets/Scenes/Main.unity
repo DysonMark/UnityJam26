@@ -3111,6 +3111,9 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 1a25a6d84ecb594c897ab3c857871840, type: 2}
   infoPanel: {fileID: 1822331351}
   payAnteButton: {fileID: 701609087}
+  luckyNumberPanel: {fileID: 597388218}
+  betPanel: {fileID: 183704007}
+  seed: 0
 --- !u!1 &956663528
 GameObject:
   m_ObjectHideFlags: 0
@@ -4988,7 +4991,11 @@ MonoBehaviour:
   moneyText: {fileID: 1377643001}
   potText: {fileID: 1152272741}
   rollsLeftText: {fileID: 84094970}
-  targetMoneyText: {fileID: 428390255}
+  targetMoneyText: {fileID: 1184609775}
+  aiTexts:
+  - {fileID: 428390255}
+  - {fileID: 1735128245}
+  - {fileID: 552290167}
 --- !u!1 &1838618448
 GameObject:
   m_ObjectHideFlags: 0

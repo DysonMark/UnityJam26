@@ -67,6 +67,7 @@ namespace UnityJam.LuckyNumber.Interactions
         {
             if (current == this)
                 current = null;
+            locked = false;
         }
     }
 }

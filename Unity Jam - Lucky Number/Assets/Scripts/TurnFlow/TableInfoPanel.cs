@@ -13,6 +13,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private TMP_Text potText;
         [SerializeField] private TMP_Text rollsLeftText;
         [SerializeField] private TMP_Text targetMoneyText;
+        [SerializeField] private TMP_Text[] aiTexts;
 
         public void Refresh(int money, int pot, int rollsLeft, int target, int table)
         {
@@ -23,6 +24,15 @@ namespace UnityJam.LuckyNumber.TurnFlow
             targetMoneyText.text = $"Target Money: {target}";
         }
 
+        public void RefreshAI(int[] lucky, int[] bets)
+        {
+            for (int i = 0; i < aiTexts.Length; i++)
+            {
+                string luckyNum = lucky[i] == 0 ? "-" : lucky[i].ToString();
+                string bet = bets[i] == 0 ? "-" : bets[i].ToString();
+                aiTexts[i].text = $"AI {i + 1} Lucky: {luckyNum} Bet: {bet}";
+            }
+        }
         private void Update()
         {
             if (Keyboard.current.tabKey.wasPressedThisFrame)
