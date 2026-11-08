@@ -21,6 +21,6 @@ MonoBehaviour:
   secondMultiplier: 1.5
   loadedChance: 0.5
   aiRandomBetChance: 0.15
-  itemPrices: 3c000000320000003c0000003c000000320000001e0000001e0000001e000000
+  itemPrices: 3c000000320000003c0000003c0000001e0000001e0000001e000000
   heavierLoadBonus: 0.15
   highRollerBonus: 0.5

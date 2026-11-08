@@ -9,14 +9,13 @@ public enum Item
     SteadyHands,
     SecondNumber,
     HighRoller,
-    PokerFace,
     BribeTheDealer, // first one-time item
     ExtraRoll,
     RabbitsFoot,
 }
 
 // Item data, the shop pick, and item effects. Prices and effect amounts live in TuningConfig SO
-// TODO - suspicion effects, and one-time items
+// One-time items trigger on their own in TurnManager (TODO let the player play them before a roll)
 public static class Shop
 {
     public const int Offered = 3;
@@ -30,7 +29,6 @@ public static class Shop
         "Steady Hands",
         "Second Number",
         "High Roller",
-        "Poker Face",
         "Bribe the Dealer",
         "Extra Roll",
         "Rabbit's Foot",
@@ -38,7 +36,6 @@ public static class Shop
 
     public static readonly string[] Descriptions =
     {
-        "insert description",
         "insert description",
         "insert description",
         "insert description",
@@ -63,11 +60,19 @@ public static class Shop
                 case Item.HeavierLoad:
                     cfg.loadedChance = Math.Min(1f, cfg.loadedChance + cfg.heavierLoadBonus);
                     break;
+                case Item.SteadyHands:
+                    cfg.suspicionPerLuckyRoll = Math.Max(0f, cfg.suspicionPerLuckyRoll - cfg.steadyHandsCut);
+                    break;
                 case Item.HighRoller:
                     cfg.luckyMultiplier += cfg.highRollerBonus;
+                    cfg.suspicionPerLuckyRoll += cfg.highRollerSuspicion;
+                    break;
+                case Item.ExtraRoll:
+                    cfg.rollsPerTable++;
                     break;
                 // NOTE Second Number item changes nothing here: the game picks it from OpenNumbers
                 // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier.
+                // Bribe the Dealer and Rabbit's Foot act on the suspicion meter in TurnManager.
             }
         }
         return cfg;

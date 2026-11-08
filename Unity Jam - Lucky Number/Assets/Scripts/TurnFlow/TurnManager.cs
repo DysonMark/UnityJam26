@@ -44,6 +44,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private int[] aiBets = new int[AiCount];
         private int[] openNumbers;
         private bool usedLoaded;
+        private bool rabbitsFoot; // cancels the suspicion of the next loaded lucky hit
         private int rolledNumber;
 
 
@@ -77,10 +78,14 @@ namespace UnityJam.LuckyNumber.TurnFlow
             rollsLeft = config.rollsPerTable;
             pot = 0;
 
+            // TODO one-time items trigger on their own for now, the player should play them before a roll
+            // Extra Roll is already in config.rollsPerTable
+            if (owned.Contains(Item.BribeTheDealer)) suspicionMeter.Lower(config.bribeAmount);
+            rabbitsFoot = owned.Contains(Item.RabbitsFoot);
+
             playerLucky = 0;
             aiLucky = new int[AiCount];
             aiBets = new int[AiCount];
-            suspicionMeter.ResetMeter();
             luckyLabel.text = "-";
             betLabel.text = "-";
 
@@ -174,7 +179,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
             diePanel.SetActive(false);
 
             ResolvePayout();
-            suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky);
+            float rise = config.suspicionPerLuckyRoll;
+            if (rabbitsFoot && usedLoaded && rolledNumber == playerLucky)
+            {
+                rise = 0f;
+                rabbitsFoot = false;
+            }
+            suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky, rise);
             rollsLeft--;
             UpdatePanel();
 

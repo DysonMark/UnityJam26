@@ -107,4 +107,16 @@ public static class DiceMath
         // rounds down in the case of remainders from splitting
         return new PotResult((int)(share * multiplier), carryover, winners);
     }
+
+    // Suspicion runs 0..1, caught at 1, it carries between tables
+    public static float AddSuspicion(float suspicion, bool usedLoaded, int rolledNum, int luckyNum, float perLuckyRoll)
+    {
+        if (usedLoaded && rolledNum == luckyNum) suspicion += perLuckyRoll;
+        return Math.Clamp(suspicion, 0f, 1f);
+    }
+
+    public static bool IsCaught(float suspicion) => suspicion >= 1f;
+
+    // Bribe the Dealer
+    public static float LowerSuspicion(float suspicion, float amount) => Math.Clamp(suspicion - amount, 0f, 1f);
 }

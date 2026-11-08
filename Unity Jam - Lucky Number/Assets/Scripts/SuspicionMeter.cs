@@ -10,30 +10,22 @@ namespace UnityJam.LuckyNumber.Meters
 {
     public class SuspicionMeter : MonoBehaviour
     {
-        [SerializeField] private Slider slider;
-        [SerializeField] private float suspicionPerLuckyRoll = 0.20f;
+        [SerializeField] private Slider slider; // 0..1 range, the math in DiceMath assumes it
 
         private float suspicion;
-        private int luckyNumber;
-        private bool hasLuckyNumber;
 
-        public bool IsCaught => suspicion >= slider.maxValue;
+        public bool IsCaught => DiceMath.IsCaught(suspicion);
 
-        public void OnRoll(bool usedLoaded, int rolled, int luckyNumber)
+        public void OnRoll(bool usedLoaded, int rolled, int luckyNumber, float perLuckyRoll)
         {
-            if (usedLoaded && rolled == luckyNumber)
-                AddSuspicion(suspicionPerLuckyRoll);
-        }
-
-        private void AddSuspicion(float amount)
-        {
-            suspicion = Mathf.Clamp(suspicion + amount, 0f, slider.maxValue);
+            suspicion = DiceMath.AddSuspicion(suspicion, usedLoaded, rolled, luckyNumber, perLuckyRoll);
             slider.value = suspicion;
         }
-        public void ResetMeter()
+
+        public void Lower(float amount)
         {
-            suspicion = 0f;
-            slider.value = 0f;
+            suspicion = DiceMath.LowerSuspicion(suspicion, amount);
+            slider.value = suspicion;
         }
     }
 }
