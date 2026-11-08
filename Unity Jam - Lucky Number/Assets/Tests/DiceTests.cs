@@ -275,18 +275,20 @@ public class DiceTests
         SimulateStrategy(cfg, tables, false, false, "Clean, own lucky ");
         SimulateStrategy(cfg, tables, true, false, "Loaded, own lucky");
         SimulateStrategy(cfg, tables, false, true, "Clean, open number");
+        SimulateStrategy(cfg, tables, false, true, "Clean, second number", hasSecond: true);
         // TODO no balance assert yet. Add "clean reaches target < 5%" once suspicion is in and the numbers are tuned.
     }
 
     // Plays many tables with one strategy, logs the results.
-    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name)
+    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name,
+        bool hasSecond = false)
     {
         var rng = new Random(42);
         int reached = 0, broke = 0;
         long totalMoney = 0;
         for (int t = 0; t < tables; t++)
         {
-            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen);
+            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen, hasSecond);
             if (hitTarget) reached++;
             else if (money < cfg.ante) broke++;
             totalMoney += money;
@@ -296,12 +298,14 @@ public class DiceTests
     }
 
     // One table: ante, bet, roll, pay out, until out of rolls, broke, or target hit.
-    // Player has no second number here.
-    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen)
+    // hasSecond = player owns Second Number: the open number they bet on is their second, paying secondMultiplier.
+    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen,
+        bool hasSecond)
     {
         int playerLucky = rng.Next(1, DiceMath.Faces + 1);
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
         int playerBet = betOpen ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : playerLucky;
+        int? playerSecond = hasSecond ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : (int?)null;
 
         int money = cfg.startingMoney;
         int carryover = 0;
@@ -320,7 +324,7 @@ public class DiceTests
                 ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance)
                 : DiceMath.RollClean(rng);
 
-            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, null,
+            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, playerSecond,
                 cfg.luckyMultiplier, cfg.secondMultiplier);
             money += result.PlayerPayout;
             carryover = result.Carryover;

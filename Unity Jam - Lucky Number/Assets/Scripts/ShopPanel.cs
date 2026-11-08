@@ -63,7 +63,6 @@ public class ShopPanel : MonoBehaviour
         uiPanel.SetActive(true);
     }
 
-    // TODO Hook to a "Leave shop" button.
     public void Close()
     {
         uiPanel.SetActive(false);

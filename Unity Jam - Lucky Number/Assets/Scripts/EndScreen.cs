@@ -49,8 +49,7 @@ public class EndScreen : MonoBehaviour
         moneyText.text = "$" + money;
         uiPanel.SetActive(true);
     }
-
-    // TODO Button hook ups
+    
     public void Restart()
     {
         Time.timeScale = 1f; //reset time in case game is paused
