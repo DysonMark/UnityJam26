@@ -12,7 +12,6 @@ public enum EndReason
 }
 
 // One panel for every ending, the text changes with the reason
-// TODO The run controller calls Show(reason, money) when the win/lose checks end the run.
 public class EndScreen : MonoBehaviour
 {
     [SerializeField] private GameObject uiPanel;
@@ -20,10 +19,6 @@ public class EndScreen : MonoBehaviour
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private string menuSceneName = "Menu";
-
-    // TODO - remove once the run controller is hooked up
-    [SerializeField] private EndReason testReason = EndReason.Caught;
-    [SerializeField] private int testMoney = 100;
 
     // Indexed by (int)EndReason, same order as the enum.
     private static readonly string[] Titles =
