@@ -2,12 +2,14 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityJam.LuckyNumber.Meters;
 
 namespace UnityJam.LuckyNumber.TurnFlow
 {
     public class TurnManager : MonoBehaviour
     {
-        [SerializeField] private TuningConfig config;
+        [SerializeField] private SuspicionMeter suspicionMeter;
+        [SerializeField] private TuningConfig[] tables;
         [SerializeField] private TableInfoPanel infoPanel;
         [SerializeField] private Button payAnteButton;
         [SerializeField] private Button cleanButton;
@@ -16,6 +18,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private GameObject betPanel;
         [SerializeField] private GameObject diePanel;
         [SerializeField] private TMP_Text rollResultText;
+        [SerializeField] private TMP_Text luckyLabel;
+        [SerializeField] private TMP_Text betLabel;
         [SerializeField] private int seed = 0;
         [SerializeField] private float showResultAfterTime = 1.5f;
 
@@ -23,6 +27,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         //Private variables
 
+        private int tableIndex;
+        private TuningConfig config => tables[tableIndex];
         private System.Random rng;
         private int money;
         private int pot;
@@ -39,6 +45,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private void Start()
         {
             rng = seed == 0 ? new System.Random() : new System.Random(seed);
+            StartTable();
 
             money = config.startingMoney;
             rollsLeft = config.rollsPerTable;
@@ -46,6 +53,27 @@ namespace UnityJam.LuckyNumber.TurnFlow
             luckyNumberPanel.SetActive(false);
             betPanel.SetActive(false);
             diePanel.SetActive(false);
+
+            UpdatePanel();
+        }
+
+        private void StartTable()
+        {
+            money = config.startingMoney;
+            rollsLeft = config.rollsPerTable;
+            pot = 0;
+
+            playerLucky = 0;
+            aiLucky = new int[AiCount];
+            aiBets = new int[AiCount];
+            suspicionMeter.ResetMeter();
+            luckyLabel.text = "-";
+            betLabel.text = "-";
+
+            luckyNumberPanel.SetActive(false);
+            betPanel.SetActive(false);
+            diePanel.SetActive(false);
+            payAnteButton.interactable = true;
 
             UpdatePanel();
         }
@@ -72,7 +100,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void UpdatePanel()
         {
-            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, config.table);
+            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1);
             infoPanel.RefreshAI(aiLucky, aiBets);
         }
 
@@ -103,6 +131,9 @@ namespace UnityJam.LuckyNumber.TurnFlow
             UpdatePanel();
 
             //TODO: check if hasItem after
+            cleanButton.interactable = true;
+            loadedButton.interactable = true;
+            rollResultText.text = "";
             diePanel.SetActive(true);
         }
 
@@ -124,6 +155,68 @@ namespace UnityJam.LuckyNumber.TurnFlow
             rollResultText.text = $"Rolled: {rolledNumber}";
             yield return new WaitForSeconds(showResultAfterTime);
             diePanel.SetActive(false);
+
+            ResolvePayout();
+            suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky);
+            rollsLeft--;
+            UpdatePanel();
+
+            EndTurn();
+        }
+
+        private void ResolvePayout()
+        {
+            int[] bets = { playerBet, aiBets[0], aiBets[1], aiBets[2] };
+
+            PotResult result = DiceMath.ResolvePot(rolledNumber, bets, pot, playerLucky, null, config.luckyMultiplier, config.secondMultiplier);
+
+            money += result.PlayerPayout;
+            pot = result.Carryover;
+
+            if (result.PlayerPayout > 0)
+                rollResultText.text = $"Rolled: {rolledNumber} - You win {result.PlayerPayout}!";
+            else if (result.WinnerCount == 0)
+                rollResultText.text = $"Rolled: {rolledNumber} - No win, pot carries over";
+            else
+                rollResultText.text = $"Rolled: {rolledNumber} - AI wins";
+        }
+
+        private void EndTurn()
+        {
+            if (money >= config.cashTarget)
+            {
+                if (tableIndex < tables.Length - 1)
+                {
+                    tableIndex++;
+                    StartTable();
+                    Debug.Log($"Table cleared! Now on table {tableIndex + 1}");
+                }
+                else
+                {
+                    Debug.Log("All tables cleared - you win!");
+                }
+                return;
+            }
+
+            if (suspicionMeter.IsCaught) 
+            { 
+                Debug.Log("Caught cheating!"); 
+                return; 
+            }
+
+            if (rollsLeft <= 0) 
+            { 
+                Debug.Log("Out of rolls"); 
+                return; 
+            }
+
+            if (money < config.ante) 
+            { 
+                Debug.Log("Out of money"); 
+                return; 
+            }
+
+            payAnteButton.interactable = true;
         }
     }
 }

@@ -845,9 +845,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 452959756a2b9d8479045ffd146e610b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Meters.SuspicionMeter
-  seed: 12345
   slider: {fileID: 975180501}
-  loadedChance: 0.3
   suspicionPerLuckyRoll: 0.2
 --- !u!1 &237063913
 GameObject:
@@ -4355,7 +4353,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b2ab58be6c72584da74c1feacadf342, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.TurnFlow.TurnManager
-  config: {fileID: 11400000, guid: 1a25a6d84ecb594c897ab3c857871840, type: 2}
+  suspicionMeter: {fileID: 228789330}
+  tables:
+  - {fileID: 11400000, guid: 1a25a6d84ecb594c897ab3c857871840, type: 2}
+  - {fileID: 11400000, guid: 607ad108e2d2722e82557bfa56514184, type: 2}
+  - {fileID: 11400000, guid: 65bd6eaa7045e5f95614017630cc7b2c, type: 2}
   infoPanel: {fileID: 1822331351}
   payAnteButton: {fileID: 701609087}
   cleanButton: {fileID: 1757253930}
@@ -4364,6 +4366,8 @@ MonoBehaviour:
   betPanel: {fileID: 460103575}
   diePanel: {fileID: 1362533556}
   rollResultText: {fileID: 1771633933}
+  luckyLabel: {fileID: 376565302}
+  betLabel: {fileID: 852686765}
   seed: 0
   showResultAfterTime: 1.5
 --- !u!1 &956663528
