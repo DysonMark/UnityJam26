@@ -200,17 +200,53 @@ public class DiceTests
     [Test]
     public void ResolvePot_SecondNumberWin_PaysSecondMultiplier()
     {
-        // TODO - give the player a second number, roll it, and check the payout uses secondMultiplier.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        // Second number 5 is an open number, only the player bet it.
+        int[] bets = { 5, 1, 2, 4 };
+        var result = DiceMath.ResolvePot(5, bets, 40, PlayerLucky, 5, 2f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(60));
+        Assert.That(result.Carryover, Is.EqualTo(0));
+        Assert.That(result.WinnerCount, Is.EqualTo(1));
     }
 
     [Test]
     public void ResolvePot_OnlyAiWins_PlayerGetsNothing_NothingCarries()
     {
-        // TODO - when only an AI hits, the player gets nothing and the AI's share leaves the pot.
-        // Delete the Assert.Ignore line when done.
-        Assert.Ignore("TODO - Dyse");
+        int[] bets = { 3, 1, 2, 4 };
+        var result = DiceMath.ResolvePot(1, bets, 40, PlayerLucky, null, 2f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(0));
+        Assert.That(result.Carryover, Is.EqualTo(0));
+        Assert.That(result.WinnerCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void AddSuspicion_OnlyLoadedLuckyHitRaisesIt()
+    {
+        Assert.That(DiceMath.AddSuspicion(0f, true, PlayerLucky, PlayerLucky, 0.2f), Is.EqualTo(0.2f).Within(1e-5));
+        Assert.That(DiceMath.AddSuspicion(0f, false, PlayerLucky, PlayerLucky, 0.2f), Is.EqualTo(0f), "clean hit");
+        Assert.That(DiceMath.AddSuspicion(0f, true, PlayerLucky + 1, PlayerLucky, 0.2f), Is.EqualTo(0f), "loaded miss");
+    }
+
+    [Test]
+    public void AddSuspicion_CaughtAfterFiveHits_CapsAtOne()
+    {
+        float s = 0f;
+        for (int i = 0; i < 4; i++) s = DiceMath.AddSuspicion(s, true, PlayerLucky, PlayerLucky, 0.2f);
+        Assert.That(DiceMath.IsCaught(s), Is.False, "4 hits");
+        s = DiceMath.AddSuspicion(s, true, PlayerLucky, PlayerLucky, 0.2f);
+        Assert.That(DiceMath.IsCaught(s), Is.True, "5 hits");
+        s = DiceMath.AddSuspicion(s, true, PlayerLucky, PlayerLucky, 0.2f);
+        Assert.That(s, Is.EqualTo(1f), "capped");
+    }
+
+    [Test]
+    public void AddSuspicion_BuildsOnCarriedValue()
+    {
+        // Suspicion carries between tables, so a new table starts from the old value, not 0.
+        float carried = 0.6f;
+        Assert.That(DiceMath.AddSuspicion(carried, true, PlayerLucky, PlayerLucky, 0.2f), Is.EqualTo(0.8f).Within(1e-5));
+        Assert.That(DiceMath.AddSuspicion(carried, false, 1, PlayerLucky, 0.2f), Is.EqualTo(carried), "no hit, unchanged");
     }
 
     [Test]

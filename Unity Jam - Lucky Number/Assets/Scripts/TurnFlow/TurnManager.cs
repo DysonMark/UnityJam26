@@ -80,7 +80,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerLucky = 0;
             aiLucky = new int[AiCount];
             aiBets = new int[AiCount];
-            suspicionMeter.ResetMeter();
             luckyLabel.text = "-";
             betLabel.text = "-";
 
@@ -174,7 +173,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             diePanel.SetActive(false);
 
             ResolvePayout();
-            suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky);
+            suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky, config.suspicionPerLuckyRoll);
             rollsLeft--;
             UpdatePanel();
 
