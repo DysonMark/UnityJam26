@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TuningConfig", menuName = "Lucky Number/Tuning Config")]
 public class TuningConfig : ScriptableObject
 {
+    public int table = 0;
     public int startingMoney = 100;
     public int ante = 10;                 // per player per roll
     public int rollsPerTable = 10;
