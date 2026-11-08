@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityJam.LuckyNumber.Core;
 using UnityJam.LuckyNumber.Interactions;
 using Random = System.Random;
 

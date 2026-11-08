@@ -214,6 +214,82 @@ public class DiceTests
         Assert.Ignore("TODO - Dyse");
     }
 
+    [Test]
+    public void Shop_Pick_ThreeUnique_AtLeastOneOfEachType()
+    {
+        var rng = new Random(42);
+        for (int i = 0; i < 1000; i++)
+        {
+            Item[] picks = Shop.Pick(rng);
+            Assert.That(picks, Has.Length.EqualTo(Shop.Offered));
+            Assert.That(picks, Is.Unique);
+            Assert.That(Array.Exists(picks, Shop.IsOneTime), "no one-time item");
+            Assert.That(Array.Exists(picks, item => !Shop.IsOneTime(item)), "no permanent item");
+        }
+    }
+
+    [Test]
+    public void Shop_Pick_EveryItemShowsUp()
+    {
+        var rng = new Random(42);
+        var seen = new bool[Shop.ItemCount];
+        for (int i = 0; i < 1000; i++)
+        {
+            foreach (Item item in Shop.Pick(rng)) seen[(int)item] = true;
+        }
+        Assert.That(seen, Is.All.True);
+    }
+
+    [Test]
+    public void Shop_ItemData_MatchesEnum()
+    {
+        // Names, descriptions, and prices are indexed by (int)item, so a missed entry would shift every item after it.
+        var cfg = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        Assert.That(Shop.Names, Has.Length.EqualTo(Shop.ItemCount));
+        Assert.That(Shop.Descriptions, Has.Length.EqualTo(Shop.ItemCount));
+        Assert.That(cfg.itemPrices, Has.Length.EqualTo(Shop.ItemCount));
+        UnityEngine.Object.DestroyImmediate(cfg);
+    }
+
+    [Test]
+    public void WithItems_HeavierLoad_RaisesLoadedChance_TableUnchanged()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HeavierLoad });
+
+        Assert.That(cfg.loadedChance, Is.EqualTo(table.loadedChance + table.heavierLoadBonus).Within(0.0001f));
+        Assert.That(table.loadedChance, Is.EqualTo(0.5f), "the table's own config should not change");
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void WithItems_HeavierLoad_StacksButCapsAtOne()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HeavierLoad, Item.HeavierLoad, Item.HeavierLoad, Item.HeavierLoad });
+
+        Assert.That(cfg.loadedChance, Is.EqualTo(1f));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
+    [Test]
+    public void WithItems_HighRoller_RaisesLuckyMultiplier_OnlyThat()
+    {
+        var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
+        var cfg = Shop.WithItems(table, new[] { Item.HighRoller });
+
+        Assert.That(cfg.luckyMultiplier, Is.EqualTo(table.luckyMultiplier + table.highRollerBonus).Within(0.0001f));
+        Assert.That(cfg.loadedChance, Is.EqualTo(table.loadedChance));
+        Assert.That(cfg.secondMultiplier, Is.EqualTo(table.secondMultiplier));
+
+        UnityEngine.Object.DestroyImmediate(cfg);
+        UnityEngine.Object.DestroyImmediate(table);
+    }
+
     // Simulator: run by hand from the Test Runner, results go to the console.
     // Uses the real tuning asset, so it balances the numbers the game actually uses.
     // TODO add suspicion logic, TODO add in item logic
@@ -231,18 +307,20 @@ public class DiceTests
         SimulateStrategy(cfg, tables, false, false, "Clean, own lucky ");
         SimulateStrategy(cfg, tables, true, false, "Loaded, own lucky");
         SimulateStrategy(cfg, tables, false, true, "Clean, open number");
+        SimulateStrategy(cfg, tables, false, true, "Clean, second number", hasSecond: true);
         // TODO no balance assert yet. Add "clean reaches target < 5%" once suspicion is in and the numbers are tuned.
     }
 
     // Plays many tables with one strategy, logs the results.
-    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name)
+    private static void SimulateStrategy(TuningConfig cfg, int tables, bool loaded, bool betOpen, string name,
+        bool hasSecond = false)
     {
         var rng = new Random(42);
         int reached = 0, broke = 0;
         long totalMoney = 0;
         for (int t = 0; t < tables; t++)
         {
-            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen);
+            var (money, hitTarget) = PlayTable(rng, cfg, loaded, betOpen, hasSecond);
             if (hitTarget) reached++;
             else if (money < cfg.ante) broke++;
             totalMoney += money;
@@ -252,12 +330,14 @@ public class DiceTests
     }
 
     // One table: ante, bet, roll, pay out, until out of rolls, broke, or target hit.
-    // Player has no second number here.
-    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen)
+    // hasSecond = player owns Second Number: the open number they bet on is their second, paying secondMultiplier.
+    private static (int money, bool reachedTarget) PlayTable(Random rng, TuningConfig cfg, bool loaded, bool betOpen,
+        bool hasSecond)
     {
         int playerLucky = rng.Next(1, DiceMath.Faces + 1);
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
         int playerBet = betOpen ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : playerLucky;
+        int? playerSecond = hasSecond ? DiceMath.OpenNumbers(playerLucky, aiLucky)[0] : (int?)null;
 
         int money = cfg.startingMoney;
         int carryover = 0;
@@ -276,7 +356,7 @@ public class DiceTests
                 ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance)
                 : DiceMath.RollClean(rng);
 
-            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, null,
+            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, playerSecond,
                 cfg.luckyMultiplier, cfg.secondMultiplier);
             money += result.PlayerPayout;
             carryover = result.Carryover;

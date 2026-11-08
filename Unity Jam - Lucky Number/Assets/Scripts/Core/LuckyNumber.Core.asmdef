@@ -1,6 +1,6 @@
 {
     "name": "LuckyNumber.Core",
-    "rootNamespace": "UnityJam.LuckyNumber.Core",
+    "rootNamespace": "",
     "references": [],
     "autoReferenced": true
 }
