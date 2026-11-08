@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UI;
 
 namespace UnityJam.LuckyNumber.TurnFlow
@@ -18,7 +19,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         int money;
         int pot;
         int rollsLeft;
-
+        int playerBet;
         int playerLucky;
         int[] aiLucky = new int[AiCount];
         int[] aiBets = new int[AiCount];
@@ -79,6 +80,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
             pot += config.ante * 4;
 
             payAnteButton.interactable = false;
+            UpdatePanel();
+        }
+
+        public void OnPlayerBet(int number)
+        {
+            playerBet = number;
+            betPanel.SetActive(false);
             UpdatePanel();
         }
     }
