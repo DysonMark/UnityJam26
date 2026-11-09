@@ -64,7 +64,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 leaveButton.onClick = new Button.ButtonClickedEvent(); // drop the copied PayAnte call
                 leaveButton.GetComponentInChildren<TMP_Text>().text = "Leave table";
                 var rect = (RectTransform)leaveButton.transform;
-                rect.anchoredPosition += new Vector2(0f, -rect.rect.height * 1.2f);
+                rect.anchoredPosition += new Vector2(0f, rect.rect.height * 1.2f);
             }
             leaveButton.onClick.AddListener(LeaveTable);
         }
