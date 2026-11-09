@@ -15,7 +15,7 @@ public enum Item
 }
 
 // Item data, the shop pick, and item effects. Prices and effect amounts live in TuningConfig SO
-// One-time items trigger on their own in TurnManager (TODO let the player play them before a roll)
+// One-time items are played by the player from the bet panel, see TurnManager.PlayItem
 public static class Shop
 {
     public const int Offered = 3;
@@ -67,12 +67,9 @@ public static class Shop
                     cfg.luckyMultiplier += cfg.highRollerBonus;
                     cfg.suspicionPerLuckyRoll += cfg.highRollerSuspicion;
                     break;
-                case Item.ExtraRoll:
-                    cfg.rollsPerTable += cfg.extraRolls;
-                    break;
                 // NOTE Second Number item changes nothing here: the game picks it from OpenNumbers
                 // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier whenever it's rolled.
-                // Bribe the Dealer and Rabbit's Foot act on the suspicion meter in TurnManager.
+                // One-time items (Bribe the Dealer, Extra Roll, Rabbit's Foot) change nothing here, they act when played.
             }
         }
         return cfg;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityJam.LuckyNumber.Interactions;
 using UnityJam.LuckyNumber.Meters;
 
 namespace UnityJam.LuckyNumber.TurnFlow
@@ -20,6 +21,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private Button loadedButton;
         [SerializeField] private GameObject luckyNumberPanel;
         [SerializeField] private GameObject betPanel;
+        [SerializeField] private ItemTray itemTray;         // on betPanel, one-time item buttons
         [SerializeField] private GameObject diePanel;
         [SerializeField] private TMP_Text rollResultText;
         [SerializeField] private Image dieImage;            // on diePanel, plays the roll strip
@@ -50,10 +52,16 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private int[] openNumbers;
         private bool usedLoaded;
         private bool rabbitsFoot; // cancels the suspicion of the next loaded lucky hit
+        private int streak;       // loaded lucky hits in a row
         private float heat;       // copycat AIs, 1 right after you win on your lucky number
         private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
         private Sprite[] rollFrames; // last roll's frames, destroyed on the next roll
+        private bool pickingSecond;  // lucky panel is open again for the Second Number item
+        private SelectLuckyNumber[] luckyButtons;
+        private TMP_Text luckyTitle;
+        private string luckyTitleText;
+        private readonly List<Item> unplayed = new List<Item>(); // one-time items for this table, not played yet
 
 
         private void Awake()
@@ -71,6 +79,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 rect.anchoredPosition += new Vector2(0f, rect.rect.height * 1.2f);
             }
             leaveButton.onClick.AddListener(LeaveTable);
+
+            // The second number pick reuses the lucky panel: same buttons, only the open numbers shown
+            luckyButtons = luckyNumberPanel.GetComponentsInChildren<SelectLuckyNumber>(true);
+            luckyTitle = luckyNumberPanel.GetComponentInChildren<TMP_Text>(true);
+            luckyTitleText = luckyTitle.text;
+
+            itemTray.onPlayed.AddListener(PlayItem);
         }
 
         private void Start()
@@ -98,11 +113,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
             pot = 0;
             heat = 0f;
             lastRoll = 0;
+            streak = 0;
 
-            // TODO one-time items trigger on their own for now, the player should play them before a roll
-            // Extra Roll is already in config.rollsPerTable
-            if (owned.Contains(Item.BribeTheDealer)) suspicionMeter.Lower(config.bribeAmount);
-            rabbitsFoot = owned.Contains(Item.RabbitsFoot);
+            // One-time items wait in the tray on the bet panel until the player plays them
+            rabbitsFoot = false;
+            unplayed.Clear();
+            foreach (Item item in owned)
+                if (Shop.IsOneTime(item)) unplayed.Add(item);
 
             playerLucky = 0;
             aiLucky = new int[AiCount];
@@ -121,16 +138,40 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         public void OnPlayerPickedLucky(int number)
         {
-            playerLucky = number;
             luckyNumberPanel.SetActive(false);
 
+            if (pickingSecond)
+            {
+                pickingSecond = false;
+                playerSecond = number;
+                luckyLabel.text = $"{playerLucky}, 2nd: {playerSecond}";
+                ShowSecondPick(false);
+                AIBets();
+                return;
+            }
+
+            playerLucky = number;
+            playerSecond = null;
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
-            // TODO Second Number is auto-picked for now, decide if player should choose it from the open numbers?
-            playerSecond = owned.Contains(Item.SecondNumber) ? openNumbers[rng.Next(openNumbers.Length)] : (int?)null;
-            if (playerSecond != null) Debug.Log($"Second number: {playerSecond}"); // TODO show it in the UI
+
+            if (owned.Contains(Item.SecondNumber))
+            {
+                pickingSecond = true;
+                ShowSecondPick(true);
+                luckyNumberPanel.SetActive(true);
+                return;
+            }
 
             AIBets();
+        }
+
+        // Second pick: only the open numbers' buttons and a new title. Off: everything back for the next table
+        private void ShowSecondPick(bool on)
+        {
+            foreach (SelectLuckyNumber button in luckyButtons)
+                button.gameObject.SetActive(!on || System.Array.IndexOf(openNumbers, button.LuckyNumber) >= 0);
+            luckyTitle.text = on ? "Pick your second number" : luckyTitleText;
         }
 
         private void AIBets()
@@ -140,7 +181,27 @@ namespace UnityJam.LuckyNumber.TurnFlow
                     config.copycatChance, heat, i == 0 ? config.chaserChance : 0f, lastRoll); // AI 1 is the chaser
 
             UpdatePanel();
+            itemTray.Show(unplayed);
             betPanel.SetActive(true);
+        }
+
+        private void PlayItem(Item item)
+        {
+            unplayed.Remove(item);
+            switch (item)
+            {
+                case Item.BribeTheDealer:
+                    suspicionMeter.Lower(config.bribeAmount);
+                    break;
+                case Item.ExtraRoll:
+                    rollsLeft += config.extraRolls;
+                    break;
+                case Item.RabbitsFoot:
+                    rabbitsFoot = true;
+                    break;
+            }
+            UpdatePanel();
+            itemTray.Show(unplayed);
         }
 
         private void UpdatePanel()
@@ -176,7 +237,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
             betPanel.SetActive(false);
             UpdatePanel();
 
-            //TODO: check if hasItem after
             cleanButton.interactable = true;
             loadedButton.interactable = true;
             rollResultText.text = "";
@@ -205,13 +265,16 @@ namespace UnityJam.LuckyNumber.TurnFlow
             diePanel.SetActive(false);
 
             ResolvePayout();
-            float rise = config.suspicionPerLuckyRoll;
-            if (rabbitsFoot && usedLoaded && rolledNumber == playerLucky)
+            bool loadedHit = usedLoaded && rolledNumber == playerLucky;
+            float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
+            if (rabbitsFoot && loadedHit)
             {
                 rise = 0f;
                 rabbitsFoot = false;
             }
             suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky, rise);
+            if (!usedLoaded) suspicionMeter.Lower(config.cleanCool);
+            streak = loadedHit ? streak + 1 : 0;
             rollsLeft--;
             UpdatePanel();
 

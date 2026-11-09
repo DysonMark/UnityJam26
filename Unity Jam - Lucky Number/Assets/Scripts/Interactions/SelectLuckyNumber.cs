@@ -58,8 +58,8 @@ namespace UnityJam.LuckyNumber.Interactions
             current = this;
             yield return new WaitForSecondsRealtime(pickDelay);
             locked = false;
+            selectedLuckyText.text = number.ToString(); // before onPicked so TurnManager can add the second number
             onPicked?.Invoke(number);
-            selectedLuckyText.text = number.ToString();
             Debug.Log("Lucky number picked: " + number);
         }
 
