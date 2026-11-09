@@ -22,6 +22,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private GameObject betPanel;
         [SerializeField] private GameObject diePanel;
         [SerializeField] private TMP_Text rollResultText;
+        [SerializeField] private Image dieImage;            // on diePanel, plays the roll strip
+        [SerializeField] private Texture2D[] cleanStrips;   // white dice, index 0 = strip that lands on 1
+        [SerializeField] private Texture2D[] loadedStrips;  // red dice, same order
+        [SerializeField] private float rollFrameTime = 0.03f;
         [SerializeField] private TMP_Text luckyLabel;
         [SerializeField] private TMP_Text betLabel;
         [SerializeField] private int seed = 0;
@@ -50,6 +54,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private float heat;       // copycat AIs, 1 right after you win on your lucky number
         private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
+        private Sprite[] rollFrames; // last roll's frames, destroyed on the next roll
 
 
         private void Awake()
@@ -195,6 +200,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             cleanButton.interactable = false;
             loadedButton.interactable = false;
+            Texture2D[] strips = usedLoaded ? loadedStrips : cleanStrips;
+            yield return PlayRoll(strips[rolledNumber - 1]);
             rollResultText.text = $"Rolled: {rolledNumber}";
             yield return new WaitForSeconds(showResultAfterTime);
             diePanel.SetActive(false);
@@ -214,6 +221,24 @@ namespace UnityJam.LuckyNumber.TurnFlow
             UpdatePanel();
 
             EndTurn();
+        }
+
+        // Strip = square frames left to right, last one shows the rolled face and stays up
+        private IEnumerator PlayRoll(Texture2D strip)
+        {
+            if (rollFrames != null)
+                foreach (Sprite frame in rollFrames) Destroy(frame);
+
+            int size = strip.height;
+            rollFrames = new Sprite[strip.width / size];
+            for (int i = 0; i < rollFrames.Length; i++)
+                rollFrames[i] = Sprite.Create(strip, new Rect(i * size, 0, size, size), new Vector2(0.5f, 0.5f));
+
+            foreach (Sprite frame in rollFrames)
+            {
+                dieImage.sprite = frame;
+                yield return new WaitForSeconds(rollFrameTime);
+            }
         }
 
         private void ResolvePayout()
