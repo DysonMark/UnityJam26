@@ -15,7 +15,9 @@ public class TuningConfig : ScriptableObject
     [Range(0f, 1f)] public float aiRandomBetChance = 0.15f;
     [Range(0f, 1f)] public float copycatChance = 0.25f; // AI bets your lucky number right after you win on it, fades each roll
     [Range(0f, 1f)] public float chaserChance = 0.3f;   // one AI bets the last rolled number
-    [Range(0f, 1f)] public float suspicionPerLuckyRoll = 0.2f; // loaded roll hits lucky, caught at 1
+    [Range(0f, 1f)] public float suspicionPerLuckyRoll = 0.15f; // loaded roll hits lucky, caught at 1
+    public float streakBonus = 0.5f;                  // each loaded lucky hit in a row adds this much more (x per roll)
+    [Range(0f, 1f)] public float cleanCool = 0.05f;   // a clean roll takes this off suspicion
 
     // indexed by (int)Item, same order as the Item enum. TODO replace placeholder pricing
     public int[] itemPrices = { 60, 50, 60, 60, 30, 30, 50 };

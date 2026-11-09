@@ -46,6 +46,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private int[] openNumbers;
         private bool usedLoaded;
         private bool rabbitsFoot; // cancels the suspicion of the next loaded lucky hit
+        private int streak;       // loaded lucky hits in a row
         private float heat;       // copycat AIs, 1 right after you win on your lucky number
         private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
@@ -93,6 +94,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             pot = 0;
             heat = 0f;
             lastRoll = 0;
+            streak = 0;
 
             // TODO one-time items trigger on their own for now, the player should play them before a roll
             // Extra Roll is already in config.rollsPerTable
@@ -198,13 +200,16 @@ namespace UnityJam.LuckyNumber.TurnFlow
             diePanel.SetActive(false);
 
             ResolvePayout();
-            float rise = config.suspicionPerLuckyRoll;
-            if (rabbitsFoot && usedLoaded && rolledNumber == playerLucky)
+            bool loadedHit = usedLoaded && rolledNumber == playerLucky;
+            float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
+            if (rabbitsFoot && loadedHit)
             {
                 rise = 0f;
                 rabbitsFoot = false;
             }
             suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky, rise);
+            if (!usedLoaded) suspicionMeter.Lower(config.cleanCool);
+            streak = loadedHit ? streak + 1 : 0;
             rollsLeft--;
             UpdatePanel();
 
