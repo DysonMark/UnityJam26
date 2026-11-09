@@ -68,10 +68,10 @@ public static class Shop
                     cfg.suspicionPerLuckyRoll += cfg.highRollerSuspicion;
                     break;
                 case Item.ExtraRoll:
-                    cfg.rollsPerTable++;
+                    cfg.rollsPerTable += cfg.extraRolls;
                     break;
                 // NOTE Second Number item changes nothing here: the game picks it from OpenNumbers
-                // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier.
+                // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier whenever it's rolled.
                 // Bribe the Dealer and Rabbit's Foot act on the suspicion meter in TurnManager.
             }
         }

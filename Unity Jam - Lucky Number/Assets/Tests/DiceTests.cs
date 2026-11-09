@@ -160,6 +160,39 @@ public class DiceTests
 
     }
 
+    [Test]
+    public void PickAiBet_Lifelike_NoHeatNoChaser_SameAsPlain()
+    {
+        var rng = new Random(42);
+        var sameRng = new Random(42);
+        for (int i = 0; i < 1000; i++)
+        {
+            int plain = DiceMath.PickAiBet(rng, 2, 0.15f);
+            rng.NextDouble(); rng.NextDouble(); // the copycat and chaser rolls the lifelike version makes
+            Assert.That(DiceMath.PickAiBet(sameRng, 2, 0.15f, 5, 1f, 0f, 0f, 4), Is.EqualTo(plain));
+        }
+    }
+
+    [Test]
+    public void PickAiBet_Lifelike_FullHeatCopies_ChaserBetsLastRoll()
+    {
+        var rng = new Random(42);
+        for (int i = 0; i < 100; i++)
+        {
+            Assert.That(DiceMath.PickAiBet(rng, 2, 0.15f, 5, 1f, 1f, 0f, 4), Is.EqualTo(5), "copycat");
+            Assert.That(DiceMath.PickAiBet(rng, 2, 0.15f, 5, 0f, 1f, 1f, 4), Is.EqualTo(4), "chaser");
+            Assert.That(DiceMath.PickAiBet(rng, 2, 0f, 5, 0f, 1f, 1f, 0), Is.EqualTo(2), "no roll yet, no chase");
+        }
+    }
+
+    [Test]
+    public void NextHeat_HotAfterLuckyWin_HalvesOtherwise()
+    {
+        Assert.That(DiceMath.NextHeat(0f, 3, 3, 40), Is.EqualTo(1f), "won on lucky");
+        Assert.That(DiceMath.NextHeat(1f, 3, 3, 0), Is.EqualTo(0.5f), "lucky rolled, AI took it");
+        Assert.That(DiceMath.NextHeat(1f, 5, 3, 40), Is.EqualTo(0.5f), "won on another number");
+    }
+
     // Player's lucky is 3, second is null unless a test needs it.
     private const int PlayerLucky = 3;
 
@@ -207,6 +240,18 @@ public class DiceTests
         Assert.That(result.PlayerPayout, Is.EqualTo(60));
         Assert.That(result.Carryover, Is.EqualTo(0));
         Assert.That(result.WinnerCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ResolvePot_SecondNumberRolled_PaysEvenWhenPlayerBetLucky()
+    {
+        // Player bet lucky 3, second is 5, 5 rolls, AI 2 also bet 5: split 40 / 2 = 20, x1.25.
+        int[] bets = { 3, 1, 5, 4 };
+        var result = DiceMath.ResolvePot(5, bets, 40, PlayerLucky, 5, 2f, 1.25f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(25));
+        Assert.That(result.Carryover, Is.EqualTo(0));
+        Assert.That(result.WinnerCount, Is.EqualTo(2));
     }
 
     [Test]
@@ -343,12 +388,12 @@ public class DiceTests
     }
 
     [Test]
-    public void WithItems_ExtraRoll_AddsOneRoll()
+    public void WithItems_ExtraRoll_AddsExtraRolls()
     {
         var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
         var cfg = Shop.WithItems(table, new[] { Item.ExtraRoll });
 
-        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable + 1));
+        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable + table.extraRolls));
 
         UnityEngine.Object.DestroyImmediate(cfg);
         UnityEngine.Object.DestroyImmediate(table);
@@ -362,8 +407,10 @@ public class DiceTests
     }
 
     // Simulator: run by hand from the Test Runner, results go to the console.
-    // Plays whole runs over the real table assets, suspicion carries between tables like in the game.
-    // Items: the strategy buys the same item in every shop, so it applies to tables 2 and 3.
+    // Plays whole runs over the real table assets like in the game: suspicion and money carry, each table's
+    // startingMoney is the buy-in, what's left is shop money. Lifelike AI (copycat + chaser) is on.
+    // Items: the strategy buys the same item in every shop it can afford, so it applies to tables 2 and 3.
+    // Strategies leave as soon as they're over the target.
     [Test, Explicit]
     public void Simulate()
     {
@@ -375,35 +422,42 @@ public class DiceTests
                 $"Assets/ScriptableObjects/TuningConfig-Table{i + 1}.asset");
             Assert.That(tables[i], Is.Not.Null, $"TuningConfig-Table{i + 1}.asset not found");
             var c = tables[i];
-            UnityEngine.Debug.Log($"Table {i + 1}: start {c.startingMoney}, target {c.cashTarget}, ante {c.ante}, " +
+            UnityEngine.Debug.Log($"Table {i + 1}: stack {c.startingMoney}, target {c.cashTarget}, ante {c.ante}, " +
                                   $"{c.rollsPerTable} rolls, loadedChance {c.loadedChance}, suspicion/hit {c.suspicionPerLuckyRoll}");
         }
+        var prices = UnityEditor.AssetDatabase.LoadAssetAtPath<TuningConfig>(
+            "Assets/ScriptableObjects/TuningConfig-Default.asset").itemPrices; // the shop reads this one
 
-        SimulateRun(tables, runs, false, false, null, "Clean");
-        SimulateRun(tables, runs, true, false, null, "Always loaded");
-        SimulateRun(tables, runs, true, true, null, "Careful loaded");
+        SimulateRun(tables, prices, runs, false, false, null, "Clean");
+        SimulateRun(tables, prices, runs, true, false, null, "Always loaded");
+        SimulateRun(tables, prices, runs, true, true, null, "Careful loaded");
         foreach (Item item in Enum.GetValues(typeof(Item)))
-            SimulateRun(tables, runs, true, true, item, $"Careful + {item}");
+            SimulateRun(tables, prices, runs, true, true, item, $"Careful + {item}");
         // TODO no balance assert yet. Add "clean wins < 5%" once the numbers are tuned.
     }
 
     // Plays many runs with one strategy, logs how they ended.
     // careful = only load while one more suspicious hit can't get you caught.
-    private static void SimulateRun(TuningConfig[] tables, int runs, bool loaded, bool careful, Item? item, string name)
+    private static void SimulateRun(TuningConfig[] tables, int[] prices, int runs, bool loaded, bool careful,
+        Item? item, string name)
     {
         var rng = new Random(42);
-        var owned = item == null ? new Item[0] : new[] { item.Value };
         int wins = 0, caught = 0, broke = 0, outOfRolls = 0, cleared = 0;
         for (int r = 0; r < runs; r++)
         {
             float suspicion = 0f;
+            var owned = new Item[0];
             string outcome = "target";
             for (int t = 0; t < tables.Length && outcome == "target"; t++)
             {
-                var cfg = Shop.WithItems(tables[t], t == 0 ? new Item[0] : owned);
-                outcome = PlayTable(rng, cfg, loaded, careful, t == 0 ? new Item[0] : owned, ref suspicion);
+                var cfg = Shop.WithItems(tables[t], owned);
+                int money = cfg.startingMoney;
+                outcome = PlayTable(rng, cfg, loaded, careful, owned, ref suspicion, ref money);
                 UnityEngine.Object.DestroyImmediate(cfg);
-                if (outcome == "target") cleared++;
+                if (outcome != "target") break;
+                cleared++;
+                int shopMoney = t + 1 < tables.Length ? money - tables[t + 1].startingMoney : 0;
+                owned = item != null && shopMoney >= prices[(int)item.Value] ? new[] { item.Value } : new Item[0];
             }
             if (outcome == "target") wins++;
             else if (outcome == "caught") caught++;
@@ -415,11 +469,11 @@ public class DiceTests
                               $"avg tables cleared {(double)cleared / runs:F2}");
     }
 
-    // One table, same order as TurnManager: ante, bet, roll, pay out, suspicion, then target / caught / rolls / broke.
-    // Second Number: when the strategy doesn't load, it bets its second number instead of its lucky.
+    // One table, same order as TurnManager: ante, bet, roll, pay out, suspicion, then caught / rolls / target / broke.
+    // The bot always bets its lucky number, Second Number pays on its own when rolled.
     // Returns "target", "caught", "broke" or "rolls".
     private static string PlayTable(Random rng, TuningConfig cfg, bool loaded, bool careful, Item[] owned,
-        ref float suspicion)
+        ref float suspicion, ref int money)
     {
         int playerLucky = rng.Next(1, DiceMath.Faces + 1);
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
@@ -428,8 +482,9 @@ public class DiceTests
         if (Array.IndexOf(owned, Item.BribeTheDealer) >= 0) suspicion = DiceMath.LowerSuspicion(suspicion, cfg.bribeAmount);
         bool rabbitsFoot = Array.IndexOf(owned, Item.RabbitsFoot) >= 0;
 
-        int money = cfg.startingMoney;
         int pot = 0;
+        float heat = 0f;
+        int lastRoll = 0;
         var bets = new int[aiLucky.Length + 1];
         for (int roll = 0; roll < cfg.rollsPerTable; roll++)
         {
@@ -437,9 +492,10 @@ public class DiceTests
             pot += cfg.ante * bets.Length;
 
             bool load = loaded && (!careful || rabbitsFoot || suspicion + cfg.suspicionPerLuckyRoll < 1f);
-            bets[0] = load || playerSecond == null ? playerLucky : playerSecond.Value;
+            bets[0] = playerLucky;
             for (int i = 0; i < aiLucky.Length; i++)
-                bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance);
+                bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance, playerLucky,
+                    cfg.copycatChance, heat, i == 0 ? cfg.chaserChance : 0f, lastRoll);
 
             int rolled = load ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance) : DiceMath.RollClean(rng);
 
@@ -447,6 +503,8 @@ public class DiceTests
                 cfg.luckyMultiplier, cfg.secondMultiplier);
             money += result.PlayerPayout;
             pot = result.Carryover;
+            heat = DiceMath.NextHeat(heat, rolled, playerLucky, result.PlayerPayout);
+            lastRoll = rolled;
 
             float rise = cfg.suspicionPerLuckyRoll;
             if (rabbitsFoot && load && rolled == playerLucky)
@@ -456,8 +514,8 @@ public class DiceTests
             }
             suspicion = DiceMath.AddSuspicion(suspicion, load, rolled, playerLucky, rise);
 
-            if (money >= cfg.cashTarget) return "target";
             if (DiceMath.IsCaught(suspicion)) return "caught";
+            if (money >= cfg.cashTarget) return "target";
             if (roll == cfg.rollsPerTable - 1) return "rolls";
             if (money < cfg.ante) return "broke";
         }

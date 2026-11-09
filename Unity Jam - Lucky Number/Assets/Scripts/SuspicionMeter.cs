@@ -14,6 +14,7 @@ namespace UnityJam.LuckyNumber.Meters
 
         private float suspicion;
 
+        public float Value => suspicion;
         public bool IsCaught => DiceMath.IsCaught(suspicion);
 
         public void OnRoll(bool usedLoaded, int rolled, int luckyNumber, float perLuckyRoll)

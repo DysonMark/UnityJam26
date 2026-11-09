@@ -80,7 +80,24 @@ public static class DiceMath
         return aiLucky;
     }
 
+    // Lifelike AI on top of the plain bet.
+    // Copycat: may bet the player's lucky number after the player wins on it. heat is 1 right after that win, halves each roll.
+    // Chaser: may bet the last rolled number (gambler's fallacy). Pass chaserChance 0 for AIs that don't chase, lastRoll 0 = none yet.
+    public static int PickAiBet(Random rng, int aiLucky, float randomBetChance, int playerLucky,
+        float copycatChance, float heat, float chaserChance, int lastRoll)
+    {
+        int bet = PickAiBet(rng, aiLucky, randomBetChance);
+        if (rng.NextDouble() < copycatChance * heat) return playerLucky;
+        if (lastRoll > 0 && rng.NextDouble() < chaserChance) return lastRoll;
+        return bet;
+    }
+
+    // How hot the copycats are for the next roll: 1 after the player wins on their lucky number, else it halves.
+    public static float NextHeat(float heat, int rolledNum, int playerLucky, int playerPayout) =>
+        rolledNum == playerLucky && playerPayout > 0 ? 1f : heat * 0.5f;
+
     // bets[0] is the player, bets[1..] are the AIs.
+    // The player's second number pays whenever it's rolled, even if they bet something else (backup lucky number).
     // multiple winners = split pot / winnerCount, remainder carries
     // no winner = whole pot carries over
     // Player's share is multiplied on a lucky (or second) number hit; the extra comes from the house.
@@ -88,17 +105,18 @@ public static class DiceMath
     public static PotResult ResolvePot(int rolledNum, int[] bets, int pot,
         int playerLuckyNum, int? playerSecond, float luckyMultiplier, float secondMultiplier)
     {
-        int winners = 0;
-        foreach (int bet in bets)
+        bool playerWins = bets[0] == rolledNum || rolledNum == playerSecond;
+        int winners = playerWins ? 1 : 0;
+        for (int i = 1; i < bets.Length; i++)
         {
-            if (bet == rolledNum) winners++;
+            if (bets[i] == rolledNum) winners++;
         }
         if (winners == 0) return new PotResult(0, pot, 0);
 
         // AI shares just leave the pot (AI money isn't tracked). Only the remainder carries.
         int share = pot / winners;
         int carryover = pot % winners;
-        if (bets[0] != rolledNum) return new PotResult(0, carryover, winners);
+        if (!playerWins) return new PotResult(0, carryover, winners);
 
         float multiplier = 1f;
         if (rolledNum == playerLuckyNum) multiplier = luckyMultiplier;

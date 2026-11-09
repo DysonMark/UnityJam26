@@ -14,7 +14,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private TableInfoPanel infoPanel;
         [SerializeField] private ShopPanel shop;
         [SerializeField] private EndScreen endScreen;
-        [SerializeField] private Button payAnteButton;
+        [SerializeField] private Button payAnteButton; // also "keep rolling" once you're over the target
+        [SerializeField] private Button leaveButton;   // optional, cloned from payAnteButton when not set
         [SerializeField] private Button cleanButton;
         [SerializeField] private Button loadedButton;
         [SerializeField] private GameObject luckyNumberPanel;
@@ -45,6 +46,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private int[] openNumbers;
         private bool usedLoaded;
         private bool rabbitsFoot; // cancels the suspicion of the next loaded lucky hit
+        private float heat;       // copycat AIs, 1 right after you win on your lucky number
+        private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
 
 
@@ -52,6 +55,17 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             shop.onBought.AddListener(owned.Add);
             shop.onClosed.AddListener(NextTable);
+
+            // ponytail: clone of the ante button so it works without a scene edit, assign a real one to restyle
+            if (leaveButton == null)
+            {
+                leaveButton = Instantiate(payAnteButton, payAnteButton.transform.parent);
+                leaveButton.onClick = new Button.ButtonClickedEvent(); // drop the copied PayAnte call
+                leaveButton.GetComponentInChildren<TMP_Text>().text = "Leave table";
+                var rect = (RectTransform)leaveButton.transform;
+                rect.anchoredPosition += new Vector2(0f, rect.rect.height * 1.2f);
+            }
+            leaveButton.onClick.AddListener(LeaveTable);
         }
 
         private void Start()
@@ -77,6 +91,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             money = config.startingMoney;
             rollsLeft = config.rollsPerTable;
             pot = 0;
+            heat = 0f;
+            lastRoll = 0;
 
             // TODO one-time items trigger on their own for now, the player should play them before a roll
             // Extra Roll is already in config.rollsPerTable
@@ -93,6 +109,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             betPanel.SetActive(false);
             diePanel.SetActive(false);
             payAnteButton.interactable = true;
+            leaveButton.gameObject.SetActive(false);
 
             UpdatePanel();
         }
@@ -114,7 +131,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private void AIBets()
         {
             for (int i = 0; i < AiCount; i++)
-                aiBets[i] = DiceMath.PickAiBet(rng, aiLucky[i], config.aiRandomBetChance);
+                aiBets[i] = DiceMath.PickAiBet(rng, aiLucky[i], config.aiRandomBetChance, playerLucky,
+                    config.copycatChance, heat, i == 0 ? config.chaserChance : 0f, lastRoll); // AI 1 is the chaser
 
             UpdatePanel();
             betPanel.SetActive(true);
@@ -122,7 +140,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void UpdatePanel()
         {
-            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1);
+            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1, suspicionMeter.Value);
             infoPanel.RefreshAI(aiLucky, aiBets);
         }
 
@@ -134,6 +152,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 return;
             }
 
+            leaveButton.gameObject.SetActive(false);
             money -= config.ante;
             pot += config.ante * 4;
 
@@ -200,6 +219,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             money += result.PlayerPayout;
             pot = result.Carryover;
+            heat = DiceMath.NextHeat(heat, rolledNumber, playerLucky, result.PlayerPayout);
+            lastRoll = rolledNumber;
 
             if (result.PlayerPayout > 0)
                 rollResultText.text = $"Rolled: {rolledNumber} - You win {result.PlayerPayout}!";
@@ -211,20 +232,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void EndTurn()
         {
-            if (money >= config.cashTarget)
-            {
-                if (tableIndex < tables.Length - 1)
-                {
-                    owned.Clear(); // items expire with the table they were bought for
-                    shop.Open(money);
-                }
-                else
-                {
-                    endScreen.Show(EndReason.Win, money);
-                }
-                return;
-            }
-
             if (suspicionMeter.IsCaught)
             {
                 endScreen.Show(EndReason.Caught, money);
@@ -233,7 +240,16 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             if (rollsLeft <= 0)
             {
-                endScreen.Show(EndReason.OutOfRolls, money);
+                if (money >= config.cashTarget) LeaveTable();
+                else endScreen.Show(EndReason.OutOfRolls, money);
+                return;
+            }
+
+            // Over the target: leave now, or pay the next ante to keep rolling
+            if (money >= config.cashTarget)
+            {
+                leaveButton.gameObject.SetActive(true);
+                payAnteButton.interactable = true;
                 return;
             }
 
@@ -246,7 +262,21 @@ namespace UnityJam.LuckyNumber.TurnFlow
             payAnteButton.interactable = true;
         }
 
-        // Shop closed, money resets in StartTable so leftover shop money doesn't carry
+        // Table cleared. Buy-in: the next table's stack comes out of your money, the rest is shop money
+        public void LeaveTable()
+        {
+            leaveButton.gameObject.SetActive(false);
+            payAnteButton.interactable = false;
+            if (tableIndex >= tables.Length - 1)
+            {
+                endScreen.Show(EndReason.Win, money);
+                return;
+            }
+            owned.Clear(); // items expire with the table they were bought for
+            shop.Open(Mathf.Max(0, money - tables[tableIndex + 1].startingMoney));
+        }
+
+        // Shop closed, StartTable sets money to the buy-in, leftover shop money doesn't carry
         private void NextTable()
         {
             tableIndex++;

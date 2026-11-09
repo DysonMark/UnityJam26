@@ -17,6 +17,6 @@ MonoBehaviour:
   rollsPerTable: 10
   cashTarget: 200
   luckyMultiplier: 2
-  secondMultiplier: 1.5
+  secondMultiplier: 1.25
   loadedChance: 0.5
   aiRandomBetChance: 0.15
