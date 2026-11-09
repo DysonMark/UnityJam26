@@ -1,0 +1,16 @@
+LICENSE - Horror UI Kit
+by Willosuna
+
+WHAT YOU CAN DO
+  - Use these graphics in personal and commercial projects, in any number of
+    projects, royalty free.
+  - Modify, recolour, scale and edit them however you like.
+  - Use them in games, apps, video, prototypes and client work.
+  - Attribution is not required, though it is always appreciated.
+
+WHAT YOU CANNOT DO
+  - Resell, redistribute or give away the image files themselves, either as-is
+    or modified, as an asset pack, library or collection.
+
+NO WARRANTY
+  Provided "as is", without warranty of any kind.

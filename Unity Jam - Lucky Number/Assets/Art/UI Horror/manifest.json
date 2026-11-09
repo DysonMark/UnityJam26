@@ -1,0 +1,518 @@
+{
+  "pack": "Horror UI Kit",
+  "pieces": 218,
+  "nine_slice_border_px_x1": 6,
+  "files": {
+    "bars/bar_fill_blood": {
+      "x1": "x1/bars/bar_fill_blood.png",
+      "x4": "x4/bars/bar_fill_blood.png",
+      "size_x1": [
+        46,
+        5
+      ]
+    },
+    "bars/bar_fill_ghost": {
+      "x1": "x1/bars/bar_fill_ghost.png",
+      "x4": "x4/bars/bar_fill_ghost.png",
+      "size_x1": [
+        46,
+        5
+      ]
+    },
+    "bars/bar_fill_soul": {
+      "x1": "x1/bars/bar_fill_soul.png",
+      "x4": "x4/bars/bar_fill_soul.png",
+      "size_x1": [
+        46,
+        5
+      ]
+    },
+    "bars/bar_fill_toxic": {
+      "x1": "x1/bars/bar_fill_toxic.png",
+      "x4": "x4/bars/bar_fill_toxic.png",
+      "size_x1": [
+        46,
+        5
+      ]
+    },
+    "bars/bar_frame": {
+      "x1": "x1/bars/bar_frame.png",
+      "x4": "x4/bars/bar_frame.png",
+      "size_x1": [
+        50,
+        10
+      ]
+    },
+    "buttons/arrow_left": {
+      "x1": "x1/buttons/arrow_left.png",
+      "x4": "x4/buttons/arrow_left.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/arrow_right": {
+      "x1": "x1/buttons/arrow_right.png",
+      "x4": "x4/buttons/arrow_right.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/button_blood_hover": {
+      "x1": "x1/buttons/button_blood_hover.png",
+      "x4": "x4/buttons/button_blood_hover.png",
+      "size_x1": [
+        42,
+        27
+      ]
+    },
+    "buttons/button_blood_normal": {
+      "x1": "x1/buttons/button_blood_normal.png",
+      "x4": "x4/buttons/button_blood_normal.png",
+      "size_x1": [
+        42,
+        27
+      ]
+    },
+    "buttons/button_blood_pressed": {
+      "x1": "x1/buttons/button_blood_pressed.png",
+      "x4": "x4/buttons/button_blood_pressed.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_disabled": {
+      "x1": "x1/buttons/button_disabled.png",
+      "x4": "x4/buttons/button_disabled.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ember_hover": {
+      "x1": "x1/buttons/button_ember_hover.png",
+      "x4": "x4/buttons/button_ember_hover.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ember_normal": {
+      "x1": "x1/buttons/button_ember_normal.png",
+      "x4": "x4/buttons/button_ember_normal.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ember_pressed": {
+      "x1": "x1/buttons/button_ember_pressed.png",
+      "x4": "x4/buttons/button_ember_pressed.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ghost_hover": {
+      "x1": "x1/buttons/button_ghost_hover.png",
+      "x4": "x4/buttons/button_ghost_hover.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ghost_normal": {
+      "x1": "x1/buttons/button_ghost_normal.png",
+      "x4": "x4/buttons/button_ghost_normal.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_ghost_pressed": {
+      "x1": "x1/buttons/button_ghost_pressed.png",
+      "x4": "x4/buttons/button_ghost_pressed.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_toxic_hover": {
+      "x1": "x1/buttons/button_toxic_hover.png",
+      "x4": "x4/buttons/button_toxic_hover.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_toxic_normal": {
+      "x1": "x1/buttons/button_toxic_normal.png",
+      "x4": "x4/buttons/button_toxic_normal.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/button_toxic_pressed": {
+      "x1": "x1/buttons/button_toxic_pressed.png",
+      "x4": "x4/buttons/button_toxic_pressed.png",
+      "size_x1": [
+        42,
+        19
+      ]
+    },
+    "buttons/close_normal": {
+      "x1": "x1/buttons/close_normal.png",
+      "x4": "x4/buttons/close_normal.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/close_pressed": {
+      "x1": "x1/buttons/close_pressed.png",
+      "x4": "x4/buttons/close_pressed.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/icon_button_normal": {
+      "x1": "x1/buttons/icon_button_normal.png",
+      "x4": "x4/buttons/icon_button_normal.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/icon_button_pressed": {
+      "x1": "x1/buttons/icon_button_pressed.png",
+      "x4": "x4/buttons/icon_button_pressed.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/minus": {
+      "x1": "x1/buttons/minus.png",
+      "x4": "x4/buttons/minus.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "buttons/plus": {
+      "x1": "x1/buttons/plus.png",
+      "x4": "x4/buttons/plus.png",
+      "size_x1": [
+        16,
+        19
+      ]
+    },
+    "controls/checkbox_off": {
+      "x1": "x1/controls/checkbox_off.png",
+      "x4": "x4/controls/checkbox_off.png",
+      "size_x1": [
+        13,
+        14
+      ]
+    },
+    "controls/checkbox_on": {
+      "x1": "x1/controls/checkbox_on.png",
+      "x4": "x4/controls/checkbox_on.png",
+      "size_x1": [
+        13,
+        14
+      ]
+    },
+    "controls/radio_off": {
+      "x1": "x1/controls/radio_off.png",
+      "x4": "x4/controls/radio_off.png",
+      "size_x1": [
+        13,
+        14
+      ]
+    },
+    "controls/radio_on": {
+      "x1": "x1/controls/radio_on.png",
+      "x4": "x4/controls/radio_on.png",
+      "size_x1": [
+        13,
+        14
+      ]
+    },
+    "controls/scrollbar_thumb": {
+      "x1": "x1/controls/scrollbar_thumb.png",
+      "x4": "x4/controls/scrollbar_thumb.png",
+      "size_x1": [
+        8,
+        17
+      ]
+    },
+    "controls/scrollbar_track": {
+      "x1": "x1/controls/scrollbar_track.png",
+      "x4": "x4/controls/scrollbar_track.png",
+      "size_x1": [
+        8,
+        48
+      ]
+    },
+    "controls/slider_knob": {
+      "x1": "x1/controls/slider_knob.png",
+      "x4": "x4/controls/slider_knob.png",
+      "size_x1": [
+        10,
+        12
+      ]
+    },
+    "controls/slider_track": {
+      "x1": "x1/controls/slider_track.png",
+      "x4": "x4/controls/slider_track.png",
+      "size_x1": [
+        52,
+        6
+      ]
+    },
+    "controls/toggle_off": {
+      "x1": "x1/controls/toggle_off.png",
+      "x4": "x4/controls/toggle_off.png",
+      "size_x1": [
+        24,
+        14
+      ]
+    },
+    "controls/toggle_on": {
+      "x1": "x1/controls/toggle_on.png",
+      "x4": "x4/controls/toggle_on.png",
+      "size_x1": [
+        24,
+        14
+      ]
+    },
+    "icons/blood_drop": {
+      "x1": "x1/icons/blood_drop.png",
+      "x4": "x4/icons/blood_drop.png",
+      "size_x1": [
+        7,
+        8
+      ]
+    },
+    "icons/coin": {
+      "x1": "x1/icons/coin.png",
+      "x4": "x4/icons/coin.png",
+      "size_x1": [
+        9,
+        9
+      ]
+    },
+    "icons/cursor": {
+      "x1": "x1/icons/cursor.png",
+      "x4": "x4/icons/cursor.png",
+      "size_x1": [
+        7,
+        11
+      ]
+    },
+    "icons/digits_0-9": {
+      "x1": "x1/icons/digits_0-9.png",
+      "x4": "x4/icons/digits_0-9.png",
+      "size_x1": [
+        60,
+        8
+      ]
+    },
+    "icons/divider": {
+      "x1": "x1/icons/divider.png",
+      "x4": "x4/icons/divider.png",
+      "size_x1": [
+        48,
+        5
+      ]
+    },
+    "icons/eye": {
+      "x1": "x1/icons/eye.png",
+      "x4": "x4/icons/eye.png",
+      "size_x1": [
+        9,
+        9
+      ]
+    },
+    "icons/heart_empty": {
+      "x1": "x1/icons/heart_empty.png",
+      "x4": "x4/icons/heart_empty.png",
+      "size_x1": [
+        9,
+        8
+      ]
+    },
+    "icons/heart_full": {
+      "x1": "x1/icons/heart_full.png",
+      "x4": "x4/icons/heart_full.png",
+      "size_x1": [
+        9,
+        8
+      ]
+    },
+    "icons/heart_half": {
+      "x1": "x1/icons/heart_half.png",
+      "x4": "x4/icons/heart_half.png",
+      "size_x1": [
+        9,
+        8
+      ]
+    },
+    "icons/select_arrow": {
+      "x1": "x1/icons/select_arrow.png",
+      "x4": "x4/icons/select_arrow.png",
+      "size_x1": [
+        4,
+        5
+      ]
+    },
+    "icons/skull": {
+      "x1": "x1/icons/skull.png",
+      "x4": "x4/icons/skull.png",
+      "size_x1": [
+        9,
+        9
+      ]
+    },
+    "icons/star_empty": {
+      "x1": "x1/icons/star_empty.png",
+      "x4": "x4/icons/star_empty.png",
+      "size_x1": [
+        9,
+        9
+      ]
+    },
+    "icons/star_full": {
+      "x1": "x1/icons/star_full.png",
+      "x4": "x4/icons/star_full.png",
+      "size_x1": [
+        9,
+        9
+      ]
+    },
+    "inventory/portrait_frame": {
+      "x1": "x1/inventory/portrait_frame.png",
+      "x4": "x4/inventory/portrait_frame.png",
+      "size_x1": [
+        36,
+        45
+      ]
+    },
+    "inventory/slot_disabled": {
+      "x1": "x1/inventory/slot_disabled.png",
+      "x4": "x4/inventory/slot_disabled.png",
+      "size_x1": [
+        22,
+        23
+      ]
+    },
+    "inventory/slot_normal": {
+      "x1": "x1/inventory/slot_normal.png",
+      "x4": "x4/inventory/slot_normal.png",
+      "size_x1": [
+        22,
+        23
+      ]
+    },
+    "inventory/slot_selected": {
+      "x1": "x1/inventory/slot_selected.png",
+      "x4": "x4/inventory/slot_selected.png",
+      "size_x1": [
+        22,
+        23
+      ]
+    },
+    "inventory/tab_active": {
+      "x1": "x1/inventory/tab_active.png",
+      "x4": "x4/inventory/tab_active.png",
+      "size_x1": [
+        34,
+        15
+      ]
+    },
+    "inventory/tab_inactive": {
+      "x1": "x1/inventory/tab_inactive.png",
+      "x4": "x4/inventory/tab_inactive.png",
+      "size_x1": [
+        34,
+        15
+      ]
+    },
+    "panels/dialogue_box": {
+      "x1": "x1/panels/dialogue_box.png",
+      "x4": "x4/panels/dialogue_box.png",
+      "size_x1": [
+        100,
+        56
+      ]
+    },
+    "panels/dialogue_box_plain": {
+      "x1": "x1/panels/dialogue_box_plain.png",
+      "x4": "x4/panels/dialogue_box_plain.png",
+      "size_x1": [
+        100,
+        48
+      ]
+    },
+    "panels/panel_9slice": {
+      "x1": "x1/panels/panel_9slice.png",
+      "x4": "x4/panels/panel_9slice.png",
+      "size_x1": [
+        24,
+        25
+      ]
+    },
+    "panels/panel_dark": {
+      "x1": "x1/panels/panel_dark.png",
+      "x4": "x4/panels/panel_dark.png",
+      "size_x1": [
+        56,
+        53
+      ]
+    },
+    "panels/panel_large": {
+      "x1": "x1/panels/panel_large.png",
+      "x4": "x4/panels/panel_large.png",
+      "size_x1": [
+        96,
+        81
+      ]
+    },
+    "panels/panel_medium": {
+      "x1": "x1/panels/panel_medium.png",
+      "x4": "x4/panels/panel_medium.png",
+      "size_x1": [
+        56,
+        53
+      ]
+    },
+    "panels/panel_small": {
+      "x1": "x1/panels/panel_small.png",
+      "x4": "x4/panels/panel_small.png",
+      "size_x1": [
+        32,
+        37
+      ]
+    },
+    "panels/tooltip": {
+      "x1": "x1/panels/tooltip.png",
+      "x4": "x4/panels/tooltip.png",
+      "size_x1": [
+        48,
+        21
+      ]
+    }
+  },
+  "version": "2.0",
+  "themes": {
+    "original": "Blood",
+    "ghost": "Ghost",
+    "toxic": "Toxic"
+  },
+  "files_with_themes": 654
+}
