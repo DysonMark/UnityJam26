@@ -133,6 +133,10 @@ public static class DiceMath
         return Math.Clamp(suspicion, 0f, 1f);
     }
 
+    // Hot streak: every loaded lucky hit in a row makes the next one more suspicious. streak = hits in a row so far
+    public static float StreakRise(float perLuckyRoll, int streak, float streakBonus) =>
+        perLuckyRoll * (1f + streakBonus * streak);
+
     public static bool IsCaught(float suspicion) => suspicion >= 1f;
 
     // Bribe the Dealer
