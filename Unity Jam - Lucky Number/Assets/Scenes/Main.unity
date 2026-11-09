@@ -846,7 +846,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Meters.SuspicionMeter
   slider: {fileID: 975180501}
-  suspicionPerLuckyRoll: 0.2
 --- !u!1 &237063913
 GameObject:
   m_ObjectHideFlags: 0
@@ -4362,6 +4361,7 @@ MonoBehaviour:
   shop: {fileID: 9188606662749371128}
   endScreen: {fileID: 5199870771364134626}
   payAnteButton: {fileID: 701609087}
+  leaveButton: {fileID: 0}
   cleanButton: {fileID: 1757253930}
   loadedButton: {fileID: 1104155800}
   luckyNumberPanel: {fileID: 597388218}
@@ -7553,6 +7553,7 @@ MonoBehaviour:
   potText: {fileID: 1152272741}
   rollsLeftText: {fileID: 84094970}
   targetMoneyText: {fileID: 1184609775}
+  suspicionText: {fileID: 0}
   aiTexts:
   - {fileID: 428390255}
   - {fileID: 1735128245}
