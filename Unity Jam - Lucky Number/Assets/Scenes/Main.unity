@@ -3977,12 +3977,12 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 8693d3aae4e1c75a788a1a37c4a44659, type: 3}
   - {fileID: 2800000, guid: 1f7d1d6db0d2a139fbc478de96d460a5, type: 3}
   loadedStrips:
-  - {fileID: 2800000, guid: c481a7eb76662fbab9a153d03820afeb, type: 3}
-  - {fileID: 2800000, guid: 865dc20d45055d8e79c639d4c7193132, type: 3}
-  - {fileID: 2800000, guid: 3e7822593e23737d68d001109a4e73eb, type: 3}
-  - {fileID: 2800000, guid: 3117baf3f2cf56158b7b890dea31b81d, type: 3}
-  - {fileID: 2800000, guid: 563ccc5b775d63bce9e960ed3d0f9975, type: 3}
-  - {fileID: 2800000, guid: ea6cd9487262d79f8b7a7631f62d0eb8, type: 3}
+  - {fileID: 2800000, guid: 8008b65d7d6f87568b07fe94fd0ed070, type: 3}
+  - {fileID: 2800000, guid: 6fb4fee82bad38c2aa709de16771ab67, type: 3}
+  - {fileID: 2800000, guid: ca25ef28b0e5a90b5adfea661275900c, type: 3}
+  - {fileID: 2800000, guid: eb61210b1bc6a12d284ec43c51316794, type: 3}
+  - {fileID: 2800000, guid: 36b51f9680dcf886fa8574cc9c410553, type: 3}
+  - {fileID: 2800000, guid: 34b7996d51b0860c793be16318f1d538, type: 3}
   rollFrameTime: 0.03
   luckyLabel: {fileID: 376565302}
   betLabel: {fileID: 852686765}
@@ -8726,7 +8726,7 @@ PrefabInstance:
     - target: {fileID: 2421005075883107427, guid: 42fd64bbe81678b2dbbfbd2bb3006d9b, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 402692482, guid: 22d870abcd405706ab69f9977d96bad9, type: 3}
+      objectReference: {fileID: -358969041, guid: 22d870abcd405706ab69f9977d96bad9, type: 3}
     - target: {fileID: 2421005075883107427, guid: 42fd64bbe81678b2dbbfbd2bb3006d9b, type: 3}
       propertyPath: m_Color.b
       value: 1
