@@ -140,7 +140,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void UpdatePanel()
         {
-            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1);
+            infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1, suspicionMeter.Value);
             infoPanel.RefreshAI(aiLucky, aiBets);
         }
 
