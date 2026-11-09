@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityJam.LuckyNumber.Interactions;
 using UnityJam.LuckyNumber.Meters;
 
 namespace UnityJam.LuckyNumber.TurnFlow
@@ -54,6 +55,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
         private Sprite[] rollFrames; // last roll's frames, destroyed on the next roll
+        private bool pickingSecond;  // lucky panel is open again for the Second Number item
+        private SelectLuckyNumber[] luckyButtons;
+        private TMP_Text luckyTitle;
+        private string luckyTitleText;
 
 
         private void Awake()
@@ -71,6 +76,11 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 rect.anchoredPosition += new Vector2(0f, rect.rect.height * 1.2f);
             }
             leaveButton.onClick.AddListener(LeaveTable);
+
+            // The second number pick reuses the lucky panel: same buttons, only the open numbers shown
+            luckyButtons = luckyNumberPanel.GetComponentsInChildren<SelectLuckyNumber>(true);
+            luckyTitle = luckyNumberPanel.GetComponentInChildren<TMP_Text>(true);
+            luckyTitleText = luckyTitle.text;
         }
 
         private void Start()
@@ -121,16 +131,40 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         public void OnPlayerPickedLucky(int number)
         {
-            playerLucky = number;
             luckyNumberPanel.SetActive(false);
 
+            if (pickingSecond)
+            {
+                pickingSecond = false;
+                playerSecond = number;
+                luckyLabel.text = $"{playerLucky}, 2nd: {playerSecond}";
+                ShowSecondPick(false);
+                AIBets();
+                return;
+            }
+
+            playerLucky = number;
+            playerSecond = null;
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
-            // TODO Second Number is auto-picked for now, decide if player should choose it from the open numbers?
-            playerSecond = owned.Contains(Item.SecondNumber) ? openNumbers[rng.Next(openNumbers.Length)] : (int?)null;
-            if (playerSecond != null) Debug.Log($"Second number: {playerSecond}"); // TODO show it in the UI
+
+            if (owned.Contains(Item.SecondNumber))
+            {
+                pickingSecond = true;
+                ShowSecondPick(true);
+                luckyNumberPanel.SetActive(true);
+                return;
+            }
 
             AIBets();
+        }
+
+        // Second pick: only the open numbers' buttons and a new title. Off: everything back for the next table
+        private void ShowSecondPick(bool on)
+        {
+            foreach (SelectLuckyNumber button in luckyButtons)
+                button.gameObject.SetActive(!on || System.Array.IndexOf(openNumbers, button.LuckyNumber) >= 0);
+            luckyTitle.text = on ? "Pick your second number" : luckyTitleText;
         }
 
         private void AIBets()
