@@ -504,7 +504,9 @@ public class DiceTests
             pot += cfg.ante * bets.Length;
 
             float next = DiceMath.StreakRise(cfg.suspicionPerLuckyRoll, streak, cfg.streakBonus);
-            bool load = loaded && (!careful || rabbitsFoot || suspicion + next < 1f);
+            // (float) cast: Unity can compare the sum at double precision, 0.775 + 0.225 reads as just under 1
+            // there but stores as exactly 1, so the careful bot loaded into getting caught
+            bool load = loaded && (!careful || rabbitsFoot || !DiceMath.IsCaught((float)(suspicion + next)));
             bets[0] = playerLucky;
             for (int i = 0; i < aiLucky.Length; i++)
                 bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance, playerLucky,
