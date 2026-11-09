@@ -21,6 +21,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private Button loadedButton;
         [SerializeField] private GameObject luckyNumberPanel;
         [SerializeField] private GameObject betPanel;
+        [SerializeField] private ItemTray itemTray;         // on betPanel, one-time item buttons
         [SerializeField] private GameObject diePanel;
         [SerializeField] private TMP_Text rollResultText;
         [SerializeField] private Image dieImage;            // on diePanel, plays the roll strip
@@ -59,6 +60,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private SelectLuckyNumber[] luckyButtons;
         private TMP_Text luckyTitle;
         private string luckyTitleText;
+        private readonly List<Item> unplayed = new List<Item>(); // one-time items for this table, not played yet
 
 
         private void Awake()
@@ -81,6 +83,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             luckyButtons = luckyNumberPanel.GetComponentsInChildren<SelectLuckyNumber>(true);
             luckyTitle = luckyNumberPanel.GetComponentInChildren<TMP_Text>(true);
             luckyTitleText = luckyTitle.text;
+
+            itemTray.onPlayed.AddListener(PlayItem);
         }
 
         private void Start()
@@ -109,10 +113,11 @@ namespace UnityJam.LuckyNumber.TurnFlow
             heat = 0f;
             lastRoll = 0;
 
-            // TODO one-time items trigger on their own for now, the player should play them before a roll
-            // Extra Roll is already in config.rollsPerTable
-            if (owned.Contains(Item.BribeTheDealer)) suspicionMeter.Lower(config.bribeAmount);
-            rabbitsFoot = owned.Contains(Item.RabbitsFoot);
+            // One-time items wait in the tray on the bet panel until the player plays them
+            rabbitsFoot = false;
+            unplayed.Clear();
+            foreach (Item item in owned)
+                if (Shop.IsOneTime(item)) unplayed.Add(item);
 
             playerLucky = 0;
             aiLucky = new int[AiCount];
@@ -174,7 +179,27 @@ namespace UnityJam.LuckyNumber.TurnFlow
                     config.copycatChance, heat, i == 0 ? config.chaserChance : 0f, lastRoll); // AI 1 is the chaser
 
             UpdatePanel();
+            itemTray.Show(unplayed);
             betPanel.SetActive(true);
+        }
+
+        private void PlayItem(Item item)
+        {
+            unplayed.Remove(item);
+            switch (item)
+            {
+                case Item.BribeTheDealer:
+                    suspicionMeter.Lower(config.bribeAmount);
+                    break;
+                case Item.ExtraRoll:
+                    rollsLeft += config.extraRolls;
+                    break;
+                case Item.RabbitsFoot:
+                    rabbitsFoot = true;
+                    break;
+            }
+            UpdatePanel();
+            itemTray.Show(unplayed);
         }
 
         private void UpdatePanel()
@@ -210,7 +235,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
             betPanel.SetActive(false);
             UpdatePanel();
 
-            //TODO: check if hasItem after
             cleanButton.interactable = true;
             loadedButton.interactable = true;
             rollResultText.text = "";

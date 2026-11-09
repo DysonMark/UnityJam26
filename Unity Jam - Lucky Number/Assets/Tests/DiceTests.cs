@@ -388,12 +388,13 @@ public class DiceTests
     }
 
     [Test]
-    public void WithItems_ExtraRoll_AddsExtraRolls()
+    public void WithItems_ExtraRoll_LeavesRollsAlone()
     {
+        // One-time items act when the player plays them, not when the table starts
         var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
         var cfg = Shop.WithItems(table, new[] { Item.ExtraRoll });
 
-        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable + table.extraRolls));
+        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable));
 
         UnityEngine.Object.DestroyImmediate(cfg);
         UnityEngine.Object.DestroyImmediate(table);
@@ -479,14 +480,16 @@ public class DiceTests
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
         int[] open = DiceMath.OpenNumbers(playerLucky, aiLucky);
         int? playerSecond = Array.IndexOf(owned, Item.SecondNumber) >= 0 ? open[rng.Next(open.Length)] : (int?)null;
+        // The bot plays its one-time items right away
         if (Array.IndexOf(owned, Item.BribeTheDealer) >= 0) suspicion = DiceMath.LowerSuspicion(suspicion, cfg.bribeAmount);
+        int rolls = cfg.rollsPerTable + (Array.IndexOf(owned, Item.ExtraRoll) >= 0 ? cfg.extraRolls : 0);
         bool rabbitsFoot = Array.IndexOf(owned, Item.RabbitsFoot) >= 0;
 
         int pot = 0;
         float heat = 0f;
         int lastRoll = 0;
         var bets = new int[aiLucky.Length + 1];
-        for (int roll = 0; roll < cfg.rollsPerTable; roll++)
+        for (int roll = 0; roll < rolls; roll++)
         {
             money -= cfg.ante;
             pot += cfg.ante * bets.Length;
@@ -516,7 +519,7 @@ public class DiceTests
 
             if (DiceMath.IsCaught(suspicion)) return "caught";
             if (money >= cfg.cashTarget) return "target";
-            if (roll == cfg.rollsPerTable - 1) return "rolls";
+            if (roll == rolls - 1) return "rolls";
             if (money < cfg.ante) return "broke";
         }
         return "rolls";
