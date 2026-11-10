@@ -43,6 +43,13 @@ public static class DiceMath
         return roll >= skip ? roll + 1 : roll; //returns face value of the roll 1-6
     }
 
+    // Which roll strip to play for a face. Strips are 6 per angle, angle-major (angle 1 faces 1-6, angle 2 faces 1-6...),
+    // so 6 strips = one angle, 24 = four angles picked at random.
+    public static int StripIndex(Random rng, int stripCount, int face)
+    {
+        return rng.Next(stripCount / Faces) * Faces + face - 1;
+    }
+
     // unique numbers per AI, none should match to the players
     public static int[] AssignAiLuckyNumbers(Random rng, int playerLucky, int aiCount)
     {

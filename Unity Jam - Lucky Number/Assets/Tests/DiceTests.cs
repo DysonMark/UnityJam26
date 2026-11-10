@@ -39,6 +39,26 @@ public class DiceTests
         }
     }
 
+    // Strip picked always lands on the asked face, and with 24 strips every angle gets used
+    [Test]
+    public void StripIndex_RightFace_AllAngles()
+    {
+        var rng = new Random(42);
+        for (int face = 1; face <= DiceMath.Faces; face++)
+        {
+            Assert.That(DiceMath.StripIndex(rng, 6, face), Is.EqualTo(face - 1));
+
+            var angles = new HashSet<int>();
+            for (int i = 0; i < 200; i++)
+            {
+                int index = DiceMath.StripIndex(rng, 24, face);
+                Assert.That(index % DiceMath.Faces, Is.EqualTo(face - 1), $"face {face}");
+                angles.Add(index / DiceMath.Faces);
+            }
+            Assert.That(angles.Count, Is.EqualTo(4), $"face {face}");
+        }
+    }
+
     [Test]
     public void RollLoaded_HitsLuckyAtLoadedChance_OtherFacesEven()
     {
