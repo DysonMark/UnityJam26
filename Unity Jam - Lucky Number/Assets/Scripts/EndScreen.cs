@@ -22,19 +22,19 @@ public class EndScreen : MonoBehaviour
 
     // Indexed by (int)EndReason, same order as the enum.
     private static readonly string[] Titles =
-    { //TODO
-        "You Win",
-        "Caught",
-        "Broke",
-        "Out of Rolls",
+    {
+        "The House Remembers",
+        "Wrong Number",
+        "Empty Pockets",
+        "Last Call",
     };
 
     private static readonly string[] Messages =
-    { //TODO
-        "Insert witty line about how you won here",
-        "Insert witty line about how you got caught here",
-        "Insert witty line here about how you're broke",
-        "Insert  witty line about how you ran out of rolls here",
+    {
+        "Three tables, three fortunes. Your debt is paid and you walk out into the rain. Nobody stops you. They'll remember your face, though.",
+        "A hand lands on your shoulder. Everyone saw the dice. The house doesn't forget a cheat, and neither does the alley out back.",
+        "Your last chip slides across the felt. Somebody else is already pulling up your chair.",
+        "The dealer sweeps the dice away. Not enough on the table, and no rolls left to fix it.",
     };
 
     public void Show(EndReason reason, int money)
