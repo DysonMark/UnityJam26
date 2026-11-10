@@ -295,6 +295,14 @@ public class DiceTests
     }
 
     [Test]
+    public void StreakRise_EachHitInARowAddsHalfMore()
+    {
+        Assert.That(DiceMath.StreakRise(0.15f, 0, 0.5f), Is.EqualTo(0.15f).Within(1e-5), "first hit");
+        Assert.That(DiceMath.StreakRise(0.15f, 1, 0.5f), Is.EqualTo(0.225f).Within(1e-5), "second in a row");
+        Assert.That(DiceMath.StreakRise(0.15f, 2, 0.5f), Is.EqualTo(0.3f).Within(1e-5), "third in a row");
+    }
+
+    [Test]
     public void Shop_Pick_ThreeUnique_AtLeastOneOfEachType()
     {
         var rng = new Random(42);
@@ -388,12 +396,13 @@ public class DiceTests
     }
 
     [Test]
-    public void WithItems_ExtraRoll_AddsExtraRolls()
+    public void WithItems_ExtraRoll_LeavesRollsAlone()
     {
+        // One-time items act when the player plays them, not when the table starts
         var table = UnityEngine.ScriptableObject.CreateInstance<TuningConfig>();
         var cfg = Shop.WithItems(table, new[] { Item.ExtraRoll });
 
-        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable + table.extraRolls));
+        Assert.That(cfg.rollsPerTable, Is.EqualTo(table.rollsPerTable));
 
         UnityEngine.Object.DestroyImmediate(cfg);
         UnityEngine.Object.DestroyImmediate(table);
@@ -479,19 +488,23 @@ public class DiceTests
         int[] aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, 3);
         int[] open = DiceMath.OpenNumbers(playerLucky, aiLucky);
         int? playerSecond = Array.IndexOf(owned, Item.SecondNumber) >= 0 ? open[rng.Next(open.Length)] : (int?)null;
+        // The bot plays its one-time items right away
         if (Array.IndexOf(owned, Item.BribeTheDealer) >= 0) suspicion = DiceMath.LowerSuspicion(suspicion, cfg.bribeAmount);
+        int rolls = cfg.rollsPerTable + (Array.IndexOf(owned, Item.ExtraRoll) >= 0 ? cfg.extraRolls : 0);
         bool rabbitsFoot = Array.IndexOf(owned, Item.RabbitsFoot) >= 0;
 
         int pot = 0;
         float heat = 0f;
         int lastRoll = 0;
+        int streak = 0;
         var bets = new int[aiLucky.Length + 1];
-        for (int roll = 0; roll < cfg.rollsPerTable; roll++)
+        for (int roll = 0; roll < rolls; roll++)
         {
             money -= cfg.ante;
             pot += cfg.ante * bets.Length;
 
-            bool load = loaded && (!careful || rabbitsFoot || suspicion + cfg.suspicionPerLuckyRoll < 1f);
+            float next = DiceMath.StreakRise(cfg.suspicionPerLuckyRoll, streak, cfg.streakBonus);
+            bool load = loaded && (!careful || rabbitsFoot || suspicion + next < 1f);
             bets[0] = playerLucky;
             for (int i = 0; i < aiLucky.Length; i++)
                 bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance, playerLucky,
@@ -506,17 +519,20 @@ public class DiceTests
             heat = DiceMath.NextHeat(heat, rolled, playerLucky, result.PlayerPayout);
             lastRoll = rolled;
 
-            float rise = cfg.suspicionPerLuckyRoll;
-            if (rabbitsFoot && load && rolled == playerLucky)
+            bool loadedHit = load && rolled == playerLucky;
+            float rise = next;
+            if (rabbitsFoot && loadedHit)
             {
                 rise = 0f;
                 rabbitsFoot = false;
             }
             suspicion = DiceMath.AddSuspicion(suspicion, load, rolled, playerLucky, rise);
+            if (!load) suspicion = DiceMath.LowerSuspicion(suspicion, cfg.cleanCool);
+            streak = loadedHit ? streak + 1 : 0;
 
             if (DiceMath.IsCaught(suspicion)) return "caught";
             if (money >= cfg.cashTarget) return "target";
-            if (roll == cfg.rollsPerTable - 1) return "rolls";
+            if (roll == rolls - 1) return "rolls";
             if (money < cfg.ante) return "broke";
         }
         return "rolls";

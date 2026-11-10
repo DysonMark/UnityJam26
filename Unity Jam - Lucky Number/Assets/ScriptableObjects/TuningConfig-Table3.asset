@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: TuningConfig-Table3
   m_EditorClassIdentifier: LuckyNumber.Core::TuningConfig
   table: 3
-  startingMoney: 350
+  startingMoney: 550
   ante: 20
-  rollsPerTable: 10
-  cashTarget: 500
-  luckyMultiplier: 2
+  rollsPerTable: 7
+  cashTarget: 1000
+  luckyMultiplier: 3
   secondMultiplier: 1.25
   loadedChance: 0.5
   aiRandomBetChance: 0.15
   itemPrices: 3c000000320000003c0000003c0000001e0000001e00000032000000
   heavierLoadBonus: 0.15
   highRollerBonus: 0.5
+  suspicionPerLuckyRoll: 0.15
