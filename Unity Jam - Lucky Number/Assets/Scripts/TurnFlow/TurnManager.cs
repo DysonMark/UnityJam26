@@ -22,14 +22,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private GameObject luckyNumberPanel;
         [SerializeField] private GameObject betPanel;
         [SerializeField] private ItemTray itemTray;         // on betPanel, one-time item buttons
-        [SerializeField] private GameObject diePanel;
+        [SerializeField] private GameObject diePanel;       // Clean / Loaded buttons + their dice
         [SerializeField] private TMP_Text rollResultText;
         [SerializeField] private TMP_Text anteValueText;
         [SerializeField] private TMP_Text hudMoneyText;
-        [SerializeField] private Image dieImage;            // on diePanel, plays the roll strip
-        [SerializeField] private Texture2D[] cleanStrips;   // white dice, index 0 = strip that lands on 1
-        [SerializeField] private Texture2D[] loadedStrips;  // red dice, same order
-        [SerializeField] private float rollFrameTime = 0.03f;
+        [SerializeField] private DieRoller cleanDie;        // white die above the Clean button
+        [SerializeField] private DieRoller loadedDie;       // red die above the Loaded button
+        [SerializeField] private AiController aiController;
         [SerializeField] private TMP_Text luckyLabel;
         [SerializeField] private TMP_Text betLabel;
         [SerializeField] private int seed = 0;
@@ -58,7 +57,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private float heat;       // copycat AIs, 1 right after you win on your lucky number
         private int lastRoll;     // chaser AI bets it, 0 = no roll yet this table
         private int rolledNumber;
-        private Sprite[] rollFrames; // last roll's frames, destroyed on the next roll
         private bool pickingSecond;  // lucky panel is open again for the Second Number item
         private SelectLuckyNumber[] luckyButtons;
         private TMP_Text luckyTitle;
@@ -129,6 +127,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             luckyLabel.text = "-";
             betLabel.text = "-";
             anteValueText.text = "-" + config.ante.ToString();
+            aiController.Ante();
 
             luckyNumberPanel.SetActive(false);
             betPanel.SetActive(false);
@@ -149,7 +148,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 playerSecond = number;
                 luckyLabel.text = $"{playerLucky}, 2nd: {playerSecond}";
                 ShowSecondPick(false);
-                AIBets();
+                StartCoroutine(AIBets());
                 return;
             }
 
@@ -157,6 +156,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerSecond = null;
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
+            aiController.SetLucky(aiLucky);
 
             if (owned.Contains(Item.SecondNumber))
             {
@@ -166,7 +166,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 return;
             }
 
-            AIBets();
+            StartCoroutine(AIBets());
         }
 
         // Second pick: only the open numbers' buttons and a new title. Off: everything back for the next table
@@ -177,13 +177,14 @@ namespace UnityJam.LuckyNumber.TurnFlow
             luckyTitle.text = on ? "Pick your second number" : luckyTitleText;
         }
 
-        private void AIBets()
+        private IEnumerator AIBets()
         {
             for (int i = 0; i < AiCount; i++)
                 aiBets[i] = DiceMath.PickAiBet(rng, aiLucky[i], config.aiRandomBetChance, playerLucky,
                     config.copycatChance, heat, i == 0 ? config.chaserChance : 0f, lastRoll); // AI 1 is the chaser
 
             UpdatePanel();
+            yield return aiController.TakeBets(rng, aiBets, playerLucky);
             itemTray.Show(unplayed);
             betPanel.SetActive(true);
         }
@@ -227,12 +228,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
             pot += config.ante * 4;
 
             payAnteButton.interactable = false;
+            aiController.Ante();
             UpdatePanel();
 
             if (playerLucky == 0)
                 luckyNumberPanel.SetActive(true);
             else
-                AIBets();
+                StartCoroutine(AIBets());
         }
 
         public void OnPlayerBet(int number)
@@ -244,6 +246,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             cleanButton.interactable = true;
             loadedButton.interactable = true;
             rollResultText.text = "";
+            cleanDie.Idle();
+            loadedDie.Idle();
             diePanel.SetActive(true);
         }
 
@@ -262,13 +266,14 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             cleanButton.interactable = false;
             loadedButton.interactable = false;
-            Texture2D[] strips = usedLoaded ? loadedStrips : cleanStrips;
-            yield return PlayRoll(strips[rolledNumber - 1]);
+            aiController.DimAll(true);
+            yield return (usedLoaded ? loadedDie : cleanDie).Roll(rng, rolledNumber);
             rollResultText.text = $"Rolled: {rolledNumber}";
             yield return new WaitForSeconds(showResultAfterTime);
             diePanel.SetActive(false);
 
             ResolvePayout();
+            yield return aiController.Payout(rolledNumber, aiBets);
             bool loadedHit = usedLoaded && rolledNumber == playerLucky;
             float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
             if (rabbitsFoot && loadedHit)
@@ -283,24 +288,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
             UpdatePanel();
 
             EndTurn();
-        }
-
-        // Strip = square frames left to right, last one shows the rolled face and stays up
-        private IEnumerator PlayRoll(Texture2D strip)
-        {
-            if (rollFrames != null)
-                foreach (Sprite frame in rollFrames) Destroy(frame);
-
-            int size = strip.height;
-            rollFrames = new Sprite[strip.width / size];
-            for (int i = 0; i < rollFrames.Length; i++)
-                rollFrames[i] = Sprite.Create(strip, new Rect(i * size, 0, size, size), new Vector2(0.5f, 0.5f));
-
-            foreach (Sprite frame in rollFrames)
-            {
-                dieImage.sprite = frame;
-                yield return new WaitForSeconds(rollFrameTime);
-            }
         }
 
         private void ResolvePayout()
