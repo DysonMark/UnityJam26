@@ -1501,7 +1501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6772f81dd3da8bc4da8407dfabd4eac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.MenuController
-  gameSceneName: Main
+  gameSceneName: Intro
 --- !u!4 &1948885113
 Transform:
   m_ObjectHideFlags: 0
