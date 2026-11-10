@@ -24,6 +24,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private ItemTray itemTray;         // on betPanel, one-time item buttons
         [SerializeField] private GameObject diePanel;
         [SerializeField] private TMP_Text rollResultText;
+        [SerializeField] private TMP_Text anteValueText;
         [SerializeField] private Image dieImage;            // on diePanel, plays the roll strip
         [SerializeField] private Texture2D[] cleanStrips;   // white dice, index 0 = strip that lands on 1
         [SerializeField] private Texture2D[] loadedStrips;  // red dice, same order
@@ -126,6 +127,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             aiBets = new int[AiCount];
             luckyLabel.text = "-";
             betLabel.text = "-";
+            anteValueText.text = "-" + config.ante.ToString();
 
             luckyNumberPanel.SetActive(false);
             betPanel.SetActive(false);
