@@ -26,23 +26,23 @@ public static class Shop
     public static readonly string[] Names =
     {
         "Heavier Load",
-        "Steady Hands",
+        "Stiff Drink",
         "Second Number",
         "High Roller",
         "Bribe the Dealer",
         "Extra Roll",
-        "Rabbit's Foot",
+        "Horseshoe",
     };
 
     public static readonly string[] Descriptions =
     {
-        "insert description",
-        "insert description",
-        "insert description",
-        "insert description",
-        "insert description",
-        "insert description",
-        "insert description",
+        "A little more lead. Loaded rolls find your number more often.",
+        "Calms the nerves. Loaded wins draw less suspicion.",
+        "Every man needs a backup. Pick a second number that also pays.",
+        "Bigger wins on your number. Bigger eyes on you, too.",
+        "Everyone has a price. Lowers suspicion now.",
+        "One more throw before the chair goes cold.",
+        "Luck owes you one. Your next loaded win goes unnoticed.",
     };
 
     public static bool IsOneTime(Item item) => item >= Item.BribeTheDealer;
@@ -69,7 +69,7 @@ public static class Shop
                     break;
                 // NOTE Second Number item changes nothing here: the game picks it from OpenNumbers
                 // and passes it to ResolvePot() as playerSecond, which pays secondMultiplier whenever it's rolled.
-                // One-time items (Bribe the Dealer, Extra Roll, Rabbit's Foot) change nothing here, they act when played.
+                // One-time items (Bribe the Dealer, Extra Roll, Horseshoe) change nothing here, they act when played.
             }
         }
         return cfg;

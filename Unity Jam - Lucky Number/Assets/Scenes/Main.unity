@@ -8925,6 +8925,34 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[0]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 36dc2bfb28a36e4adb251a389cd8a71b, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[1]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 81fcfac575b53e2e7843f99f8d421865, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[2]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 391684c3099189b71a09bfb8aef99cc4, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[3]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 192ed3416f9ec329286ff5a8993ab8ec, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[4]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 3b9f95537b5df504894d5c5321e21c6a, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[5]'
+      value: 
+      objectReference: {fileID: 21300000, guid: cc22594c8bf62388fb4e14826a61c52d, type: 3}
+    - target: {fileID: 1055840981287495115, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
+      propertyPath: 'itemIcons.Array.data[6]'
+      value: 
+      objectReference: {fileID: 21300000, guid: 91b22f33e60ed188491123fd753f40fd, type: 3}
     - target: {fileID: 2113221319398242199, guid: 3698f79cd7bb16e70b3fae4cffc9d6e1, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
