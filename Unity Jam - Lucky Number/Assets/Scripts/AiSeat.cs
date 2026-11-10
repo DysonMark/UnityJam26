@@ -13,18 +13,21 @@ public class AiSeat : MonoBehaviour
     [SerializeField] private Image chipImage;
     [SerializeField] private DieRoller die;
     [SerializeField] private GameObject onYouTag;     // optional
-    [SerializeField] private ParticleSystem sparkle;  // optional
+    [SerializeField] private VfxPlayer sparkle;       // Sparkle_Burst_Gold
     [SerializeField] private CanvasGroup group;
     [SerializeField] private RectTransform coinTarget; // where won coins land, defaults to this plate
     [SerializeField] private Color winChipColor = new Color(1f, 0.8f, 0.3f);
     [SerializeField] private float lostAlpha = 0.55f;
     [SerializeField] private float dimAlpha = 0.6f;
+    [SerializeField] private Color luckyGlow = new Color(1f, 0.85f, 0.55f);
 
     private Color chipColor;
 
     public RectTransform CoinTarget => coinTarget != null ? coinTarget : (RectTransform)transform;
 
     private void Awake() => chipColor = chipImage.color;
+
+    private void Start() => StartCoroutine(Juice.Pulse(luckyImage, luckyGlow));
 
     public void SetName(string seatName) => nameText.text = seatName;
 
@@ -55,7 +58,7 @@ public class AiSeat : MonoBehaviour
     public void Win()
     {
         chipImage.color = winChipColor;
-        if (sparkle != null) sparkle.Play();
+        sparkle.Play();
     }
 
     public void Lose() => group.alpha = lostAlpha;

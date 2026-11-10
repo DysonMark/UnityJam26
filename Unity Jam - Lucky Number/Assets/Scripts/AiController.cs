@@ -9,8 +9,8 @@ public class AiController : MonoBehaviour
     [SerializeField] private float startDelay = 0.4f;
     [SerializeField] private Vector2 thinkPause = new Vector2(0.15f, 0.45f);
     [SerializeField] private float seatStagger = 0.3f;
-    [SerializeField] private RectTransform pot;        // coins fly from here, optional
-    [SerializeField] private RectTransform coinPrefab; // optional, no coins without it
+    [SerializeField] private RectTransform pot;        // coins fly from here
+    [SerializeField] private RectTransform coinPrefab;
     [SerializeField] private string[] names =
     {
         "Mr. Gray", "The Widow", "Lucky Sal", "Doc Malone", "Velvet", "Two-Bit Eddie",
@@ -56,7 +56,8 @@ public class AiController : MonoBehaviour
         foreach (AiSeat seat in seats) seat.Dim(on);
     }
     
-    public IEnumerator Payout(int rolled, int[] bets)
+    // playerTarget: where the player's coins land, null when the player didn't win
+    public IEnumerator Payout(int rolled, int[] bets, RectTransform playerTarget)
     {
         for (int i = 0; i < seats.Length; i++)
         {
@@ -65,8 +66,9 @@ public class AiController : MonoBehaviour
         }
 
         Coroutine last = null;
+        if (playerTarget != null) last = StartCoroutine(Juice.FlyCoins(coinPrefab, pot, playerTarget));
         for (int i = 0; i < seats.Length; i++)
-            if (bets[i] == rolled && pot != null && coinPrefab != null)
+            if (bets[i] == rolled)
                 last = StartCoroutine(Juice.FlyCoins(coinPrefab, pot, seats[i].CoinTarget));
         yield return last;
 

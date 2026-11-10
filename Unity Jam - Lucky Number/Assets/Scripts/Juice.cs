@@ -52,6 +52,17 @@ public static class Juice
         graphic.color = start;
     }
 
+    // Slow color pulse between the graphic's color and glow, forever, stop it with StopCoroutine.
+    public static IEnumerator Pulse(Graphic graphic, Color glow, float period = 1.6f)
+    {
+        Color start = graphic.color;
+        for (float t = 0; ; t += Time.deltaTime)
+        {
+            graphic.color = Color.Lerp(start, glow, Mathf.PingPong(t * 2f / period, 1f));
+            yield return null;
+        }
+    }
+
     // count coins arc from -> to, one every gap seconds. One loop moves all of them, so no MonoBehaviour needed.
     public static IEnumerator FlyCoins(RectTransform prefab, RectTransform from, RectTransform to,
         int count = 6, float gap = 0.08f, float flightTime = 0.45f, float arcHeight = 60f)

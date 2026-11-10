@@ -34,6 +34,22 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private int seed = 0;
         [SerializeField] private float showResultAfterTime = 1.5f;
 
+        [Header("Juice")]
+        [SerializeField] private RectTransform table;       // shaken on die landing and jackpot
+        [SerializeField] private Graphic flashOverlay;      // full-screen Image, alpha 0
+        [SerializeField] private Color jackpotFlash = new Color(1f, 0.8f, 0.3f, 0.6f);
+        [SerializeField] private TMP_Text jackpotText;      // "LUCKY 4!", off until a jackpot
+        [SerializeField] private VfxPlayer confetti;        // Confetti_Burst_Gold
+        [SerializeField] private VfxPlayer landDust;        // Land_Dust_Stone, moved to the die that rolled
+        [SerializeField] private VfxPlayer landFlash;       // Hit_Flash_Yellow
+        [SerializeField] private TMP_Text floatTextPrefab;  // "+60" / "-10" near the money
+        [SerializeField] private Color luckyGlow = new Color(1f, 0.85f, 0.55f);
+        [SerializeField] private TMP_Text streakText;       // "HOT x3", loaded lucky hits in a row 
+        [SerializeField] private VfxPlayer streakBurst;     // Star_Burst_Yellow
+        [SerializeField] private GameObject bannerPanel;    // table intro 
+        [SerializeField] private TMP_Text bannerText;
+        [SerializeField] private float bannerTime = 1.6f;
+
         const int AiCount = 3;
 
         //Private variables
@@ -62,6 +78,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private TMP_Text luckyTitle;
         private string luckyTitleText;
         private readonly List<Item> unplayed = new List<Item>(); // one-time items for this table, not played yet
+        private int shownMoney;      // what the HUD shows while it counts up
+        private Coroutine moneyCount;
 
 
         private void Awake()
@@ -100,6 +118,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             betPanel.SetActive(false);
             diePanel.SetActive(false);
 
+            StartCoroutine(Juice.Pulse(luckyLabel, luckyGlow));
             UpdatePanel();
         }
 
@@ -134,8 +153,20 @@ namespace UnityJam.LuckyNumber.TurnFlow
             diePanel.SetActive(false);
             payAnteButton.interactable = true;
             leaveButton.gameObject.SetActive(false);
+            streakText.gameObject.SetActive(false);
+            jackpotText.gameObject.SetActive(false);
 
             UpdatePanel();
+            StartCoroutine(Banner());
+        }
+
+        private IEnumerator Banner()
+        {
+            bannerText.text = $"TABLE {tableIndex + 1}\n<size=60%>Make ${config.cashTarget} in {config.rollsPerTable} rolls</size>";
+            bannerPanel.SetActive(true);
+            yield return Juice.Punch(bannerPanel.transform, 0.3f, 0.25f);
+            yield return new WaitForSeconds(bannerTime);
+            bannerPanel.SetActive(false);
         }
 
         public void OnPlayerPickedLucky(int number)
@@ -210,7 +241,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private void UpdatePanel()
         {
-            hudMoneyText.text = $"{money} <size=50%><color=#A39A88>/ {config.cashTarget}</color></size>";
+            if (money != shownMoney)
+            {
+                if (moneyCount != null) StopCoroutine(moneyCount);
+                string format = "{0} <size=50%><color=#A39A88>/ " + config.cashTarget + "</color></size>";
+                moneyCount = StartCoroutine(Juice.CountUp(hudMoneyText, shownMoney, money, 0.5f, format));
+                shownMoney = money;
+            }
             infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1, suspicionMeter.Value);
             infoPanel.RefreshAI(aiLucky, aiBets);
         }
@@ -226,6 +263,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             leaveButton.gameObject.SetActive(false);
             money -= config.ante;
             pot += config.ante * 4;
+            StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "-" + config.ante));
 
             payAnteButton.interactable = false;
             aiController.Ante();
@@ -267,13 +305,20 @@ namespace UnityJam.LuckyNumber.TurnFlow
             cleanButton.interactable = false;
             loadedButton.interactable = false;
             aiController.DimAll(true);
-            yield return (usedLoaded ? loadedDie : cleanDie).Roll(rng, rolledNumber);
+            DieRoller die = usedLoaded ? loadedDie : cleanDie;
+            yield return die.Roll(rng, rolledNumber);
+            bool jackpot = rolledNumber == playerLucky;
+            Land(die.transform, jackpot ? 14f : 6f); // one shake at a time, two would drift the table
+            if (jackpot) StartCoroutine(Jackpot());
             rollResultText.text = $"Rolled: {rolledNumber}";
             yield return new WaitForSeconds(showResultAfterTime);
             diePanel.SetActive(false);
 
+            int before = money;
             ResolvePayout();
-            yield return aiController.Payout(rolledNumber, aiBets);
+            bool won = money > before;
+            yield return aiController.Payout(rolledNumber, aiBets, won ? hudMoneyText.rectTransform : null);
+            if (won) StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "+" + (money - before)));
             bool loadedHit = usedLoaded && rolledNumber == playerLucky;
             float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
             if (rabbitsFoot && loadedHit)
@@ -284,10 +329,44 @@ namespace UnityJam.LuckyNumber.TurnFlow
             suspicionMeter.OnRoll(usedLoaded, rolledNumber, playerLucky, rise);
             if (!usedLoaded) suspicionMeter.Lower(config.cleanCool);
             streak = loadedHit ? streak + 1 : 0;
+            ShowStreak();
             rollsLeft--;
             UpdatePanel();
 
             EndTurn();
+        }
+
+        // punch the die, shake the table, dust + flash where it landed
+        private void Land(Transform die, float shake)
+        {
+            StartCoroutine(Juice.Punch(die, 0.25f));
+            StartCoroutine(Juice.Shake(table, shake, 0.3f));
+            landDust.transform.position = die.position;
+            landFlash.transform.position = die.position;
+            landDust.Play();
+            landFlash.Play();
+        }
+
+        // rolled the player's lucky number
+        private IEnumerator Jackpot()
+        {
+            jackpotText.text = $"LUCKY {rolledNumber}!";
+            jackpotText.gameObject.SetActive(true);
+            confetti.Play();
+            StartCoroutine(Juice.Flash(flashOverlay, jackpotFlash, 0.4f));
+            yield return Juice.Punch(jackpotText.transform, 0.6f, 0.3f);
+            yield return new WaitForSeconds(1.2f);
+            jackpotText.gameObject.SetActive(false);
+        }
+
+        // loaded lucky hits in a row. Shown from 2, each hit also raises suspicion more (StreakRise)
+        private void ShowStreak()
+        {
+            streakText.gameObject.SetActive(streak >= 2);
+            if (streak < 2) return;
+            streakText.text = $"HOT x{streak}";
+            StartCoroutine(Juice.Punch(streakText.transform));
+            streakBurst.Play();
         }
 
         private void ResolvePayout()

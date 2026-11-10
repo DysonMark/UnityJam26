@@ -434,6 +434,10 @@ MonoBehaviour:
   number: 6
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -782,17 +786,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183704007}
   m_CullTransparentMesh: 1
---- !u!114 &200049051 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2421005075883107427, guid: 42fd64bbe81678b2dbbfbd2bb3006d9b, type: 3}
-  m_PrefabInstance: {fileID: 7733532217177911711}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1 &228789328
 GameObject:
   m_ObjectHideFlags: 0
@@ -1765,6 +1758,10 @@ MonoBehaviour:
   number: 4
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -2051,6 +2048,10 @@ MonoBehaviour:
   number: 6
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -2992,6 +2993,10 @@ MonoBehaviour:
   number: 5
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -3956,22 +3961,9 @@ MonoBehaviour:
   rollResultText: {fileID: 1771633933}
   anteValueText: {fileID: 925306316}
   hudMoneyText: {fileID: 2021775150}
-  dieImage: {fileID: 200049051}
-  cleanStrips:
-  - {fileID: 2800000, guid: 22d870abcd405706ab69f9977d96bad9, type: 3}
-  - {fileID: 2800000, guid: dd9834b1d8d38d3da894576528776509, type: 3}
-  - {fileID: 2800000, guid: 4390c57970a7a758bbc49b9792ec07a5, type: 3}
-  - {fileID: 2800000, guid: af9721d2d149eeb7f81d388c0bf4e541, type: 3}
-  - {fileID: 2800000, guid: 8693d3aae4e1c75a788a1a37c4a44659, type: 3}
-  - {fileID: 2800000, guid: 1f7d1d6db0d2a139fbc478de96d460a5, type: 3}
-  loadedStrips:
-  - {fileID: 2800000, guid: 8008b65d7d6f87568b07fe94fd0ed070, type: 3}
-  - {fileID: 2800000, guid: 6fb4fee82bad38c2aa709de16771ab67, type: 3}
-  - {fileID: 2800000, guid: ca25ef28b0e5a90b5adfea661275900c, type: 3}
-  - {fileID: 2800000, guid: eb61210b1bc6a12d284ec43c51316794, type: 3}
-  - {fileID: 2800000, guid: 36b51f9680dcf886fa8574cc9c410553, type: 3}
-  - {fileID: 2800000, guid: 34b7996d51b0860c793be16318f1d538, type: 3}
-  rollFrameTime: 0.03
+  cleanDie: {fileID: 0}
+  loadedDie: {fileID: 0}
+  aiController: {fileID: 0}
   luckyLabel: {fileID: 376565302}
   betLabel: {fileID: 852686765}
   seed: 0
@@ -4205,6 +4197,10 @@ MonoBehaviour:
   number: 5
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -5012,6 +5008,10 @@ MonoBehaviour:
   number: 1
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -5678,6 +5678,10 @@ MonoBehaviour:
   number: 3
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -5926,6 +5930,10 @@ MonoBehaviour:
   number: 1
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -6442,6 +6450,10 @@ MonoBehaviour:
   number: 2
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -7168,6 +7180,10 @@ MonoBehaviour:
   number: 3
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -7525,6 +7541,10 @@ MonoBehaviour:
   number: 4
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}
@@ -7622,6 +7642,10 @@ MonoBehaviour:
   number: 2
   hoverScale: 1.15
   pickedScale: 1.25
+  pressedScale: 0.9
+  normalSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  pressedSprite: {fileID: 0}
   animSpeed: 12
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pickedColor: {r: 1, g: 0.8, b: 0.3, a: 1}

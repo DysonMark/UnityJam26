@@ -27,6 +27,8 @@ public class ShopPanel : MonoBehaviour
 
     public int Money { get; private set; }
 
+    public Sprite Icon(Item item) => itemIcons[(int)item];
+
     private readonly Random rng = new Random();
     private Item[] offered;
     private bool[] sold;
