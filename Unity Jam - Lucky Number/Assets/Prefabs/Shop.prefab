@@ -390,7 +390,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1133477895, guid: e1f84d64391f3396cadb147eb00db8f9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 36dc2bfb28a36e4adb251a389cd8a71b, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1133477895, guid: e1f84d64391f3396cadb147eb00db8f9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 36dc2bfb28a36e4adb251a389cd8a71b, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1311,13 +1311,13 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 7db0df8e22f77166d8b2f231e36865f8, type: 2}
   moneyText: {fileID: 578318836725638185}
   itemIcons:
-  - {fileID: 712849816, guid: 7558f19d2343f98a9b3a3186361908f1, type: 3}
-  - {fileID: 1113291158, guid: 9fa909a3d370ffb609b600e9a3af0158, type: 3}
-  - {fileID: 774890165, guid: 33ff9eb3c91dcb8a0b779753fca9ab73, type: 3}
-  - {fileID: -367760024, guid: c6beed34ab2e0ad0986dc93f7d643101, type: 3}
-  - {fileID: 834320797, guid: e691ac780847ed7cba1b11f70ea87e33, type: 3}
-  - {fileID: 912099313, guid: b94e134e9e6ff70d4ad95122c03aaad2, type: 3}
-  - {fileID: 1133477895, guid: e1f84d64391f3396cadb147eb00db8f9, type: 3}
+  - {fileID: 21300000, guid: 36dc2bfb28a36e4adb251a389cd8a71b, type: 3}
+  - {fileID: 21300000, guid: 81fcfac575b53e2e7843f99f8d421865, type: 3}
+  - {fileID: 21300000, guid: 391684c3099189b71a09bfb8aef99cc4, type: 3}
+  - {fileID: 21300000, guid: 192ed3416f9ec329286ff5a8993ab8ec, type: 3}
+  - {fileID: 21300000, guid: 3b9f95537b5df504894d5c5321e21c6a, type: 3}
+  - {fileID: 21300000, guid: cc22594c8bf62388fb4e14826a61c52d, type: 3}
+  - {fileID: 21300000, guid: 91b22f33e60ed188491123fd753f40fd, type: 3}
   slotButtons:
   - {fileID: 2752217014987168562}
   - {fileID: 562181803653459936}
@@ -1339,7 +1339,6 @@ MonoBehaviour:
   - {fileID: 8240355365226545849}
   - {fileID: 2356670076447139452}
   cantAffordColor: {r: 1, g: 0, b: 0, a: 1}
-  testMoney: 100
   onBought:
     m_PersistentCalls:
       m_Calls: []
@@ -2239,7 +2238,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1133477895, guid: e1f84d64391f3396cadb147eb00db8f9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 36dc2bfb28a36e4adb251a389cd8a71b, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
