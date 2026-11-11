@@ -17,8 +17,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private TMP_Text targetMoneyText;
         [SerializeField] private TMP_Text suspicionText; // optional, cloned from targetMoneyText when not set
         [SerializeField] private UnityEngine.UI.Slider suspicionSlider;
-        [SerializeField] private TMP_Text[] aiLuckyTexts;
-        [SerializeField] private TMP_Text[] aiBetTexts;
         [SerializeField] private UnityEngine.UI.Slider moneyGauge;
         [SerializeField] private UnityEngine.UI.Image[] rollDots;
         [SerializeField] private Color rollOn = Color.white;
@@ -48,20 +46,12 @@ namespace UnityJam.LuckyNumber.TurnFlow
             rollsLeftText.text = $"{rollsLeft} out of {total}";
             targetMoneyText.text = $"Target Money: {target}";
             float frac = Mathf.InverseLerp(suspicionSlider.minValue, suspicionSlider.maxValue, suspicionSlider.value);
-            suspicionText.text = $"Suspicion {frac:P0}";
+            suspicionText.text = $"Suspicion\n{frac:P0}"; // two lines, like the pot
 
             moneyGauge.maxValue = Mathf.Max(1, target);
             moneyGauge.value = money;
         }
 
-        public void RefreshAI(int[] lucky, int[] bets)
-        {
-            for (int i = 0; i < aiLuckyTexts.Length; i++)
-            {
-                aiLuckyTexts[i].text = lucky[i] == 0 ? "-" : lucky[i].ToString();
-                aiBetTexts[i].text = bets[i] == 0 ? "-" : bets[i].ToString();
-            }
-        }
         private void Update()
         {
             if (Keyboard.current.tabKey.wasPressedThisFrame)

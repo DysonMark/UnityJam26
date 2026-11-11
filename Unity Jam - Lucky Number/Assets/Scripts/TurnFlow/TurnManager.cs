@@ -16,7 +16,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private ShopPanel shop;
         [SerializeField] private EndScreen endScreen;
         [SerializeField] private Button payAnteButton; // also "keep rolling" once you're over the target
-        [SerializeField] private Button leaveButton;   // optional, cloned from payAnteButton when not set
+        [SerializeField] private Button leaveButton;   // shown between turns once you're over the target
+        [SerializeField] private RectTransform anteShine; // stripe swept across Pay Ante, under a RectMask2D
         [SerializeField] private Button cleanButton;
         [SerializeField] private Button loadedButton;
         [SerializeField] private GameObject luckyNumberPanel;
@@ -29,15 +30,17 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private DieRoller cleanDie;        // white die above the Clean button
         [SerializeField] private DieRoller loadedDie;       // red die above the Loaded button
         [SerializeField] private AiController aiController;
-        [SerializeField] private TMP_Text luckyLabel;
+        [SerializeField] private TMP_Text luckyLabel;       // "?" until the lucky die shows
+        [SerializeField] private Image luckyDie;            // lucky die face, like the AI seats
+        [SerializeField] private Image secondDie;           // Second Number item, beside luckyDie
+        [SerializeField] private Sprite[] luckyFaces;       // UI dice faces 1-6
         [SerializeField] private TMP_Text betLabel;
+        [SerializeField] private TMP_Text potLabel;         // "POT $40" at the top of the table
         [SerializeField] private int seed = 0;
-        [SerializeField] private float showResultAfterTime = 1.5f;
+        [SerializeField] private float showResultAfterTime = 1f;
 
         [Header("Juice")]
         [SerializeField] private RectTransform table;       // shaken on die landing and jackpot
-        [SerializeField] private Graphic flashOverlay;      // full-screen Image, alpha 0
-        [SerializeField] private Color jackpotFlash = new Color(1f, 0.8f, 0.3f, 0.6f);
         [SerializeField] private TMP_Text jackpotText;      // "LUCKY 4!", off until a jackpot
         [SerializeField] private float jackpotTime = 2.4f;
         [SerializeField] private TMP_Text potText;          // "POT CARRIES OVER", at the pot when nobody wins
@@ -88,16 +91,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             shop.onBought.AddListener(owned.Add);
             shop.onClosed.AddListener(NextTable);
 
-            // ponytail: clone of the ante button so it works without a scene edit, assign a real one to restyle
-            if (leaveButton == null)
-            {
-                leaveButton = Instantiate(payAnteButton, payAnteButton.transform.parent);
-                leaveButton.onClick = new Button.ButtonClickedEvent(); // drop the copied PayAnte call
-                leaveButton.GetComponentInChildren<TMP_Text>().text = "Leave table";
-                var rect = (RectTransform)leaveButton.transform;
-                rect.anchoredPosition += new Vector2(0f, rect.rect.height * 1.2f);
-            }
             leaveButton.onClick.AddListener(LeaveTable);
+            StartCoroutine(Juice.Shine(anteShine, payAnteButton));
 
             // The second number pick reuses the lucky panel: same buttons, only the open numbers shown
             luckyButtons = luckyNumberPanel.GetComponentsInChildren<SelectLuckyNumber>(true);
@@ -119,7 +114,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             betPanel.SetActive(false);
             diePanel.SetActive(false);
 
-            StartCoroutine(Juice.Pulse(luckyLabel, luckyGlow));
+            StartCoroutine(Juice.Pulse(luckyDie, luckyGlow));
+            StartCoroutine(Juice.Pulse(secondDie, luckyGlow));
             UpdatePanel();
         }
 
@@ -144,8 +140,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerLucky = 0;
             aiLucky = new int[AiCount];
             aiBets = new int[AiCount];
-            luckyLabel.text = "-";
-            betLabel.text = "-";
+            luckyLabel.text = "?";
+            luckyDie.enabled = false;
+            ShowLuckyPair(false);
+            betLabel.text = "?";
             anteValueText.text = "-" + config.ante.ToString();
             aiController.Ante();
 
@@ -165,9 +163,11 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             bannerText.text = $"TABLE {tableIndex + 1}\n<size=60%>Make ${config.cashTarget} in {config.rollsPerTable} rolls</size>";
             bannerPanel.SetActive(true);
+            payAnteButton.interactable = false; // no ante under the banner, it would sit over the lucky panel
             yield return Juice.Punch(bannerPanel.transform, 0.3f, 0.25f);
             yield return new WaitForSeconds(bannerTime);
             bannerPanel.SetActive(false);
+            payAnteButton.interactable = true;
         }
 
         public void OnPlayerPickedLucky(int number)
@@ -178,7 +178,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             {
                 pickingSecond = false;
                 playerSecond = number;
-                luckyLabel.text = $"{playerLucky}, 2nd: {playerSecond}";
+                secondDie.sprite = luckyFaces[number - 1];
+                ShowLuckyPair(true);
                 ShowSecondPick(false);
                 StartCoroutine(AIBets());
                 return;
@@ -186,6 +187,9 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             playerLucky = number;
             playerSecond = null;
+            luckyDie.sprite = luckyFaces[number - 1];
+            luckyDie.enabled = true;
+            luckyLabel.text = ""; // the die shows it
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
             aiController.SetLucky(aiLucky);
@@ -199,6 +203,14 @@ namespace UnityJam.LuckyNumber.TurnFlow
             }
 
             StartCoroutine(AIBets());
+        }
+
+        // One die centred, or the lucky + second dice side by side, centred as a pair
+        private void ShowLuckyPair(bool pair)
+        {
+            secondDie.enabled = pair;
+            RectTransform die = luckyDie.rectTransform;
+            die.anchoredPosition = new Vector2(pair ? -secondDie.rectTransform.anchoredPosition.x : 0f, die.anchoredPosition.y);
         }
 
         // Second pick: only the open numbers' buttons and a new title. Off: everything back for the next table
@@ -249,8 +261,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 moneyCount = StartCoroutine(Juice.CountUp(hudMoneyText, shownMoney, money, 0.5f, format));
                 shownMoney = money;
             }
+            potLabel.text = $"POT <color=#E58929>${pot}</color>";
             infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1, suspicionMeter.Value);
-            infoPanel.RefreshAI(aiLucky, aiBets);
         }
 
         public void PayAnte()
@@ -267,6 +279,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "-" + config.ante));
 
             payAnteButton.interactable = false;
+            betLabel.text = "?"; // like the AI chips, cleared each ante
             aiController.Ante();
             UpdatePanel();
 
@@ -359,7 +372,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
             jackpotText.text = $"LUCKY {rolledNumber}!";
             jackpotText.gameObject.SetActive(true);
             confetti.Play();
-            StartCoroutine(Juice.Flash(flashOverlay, jackpotFlash, 0.4f));
             yield return Juice.Punch(jackpotText.transform, 0.6f, 0.3f);
             yield return new WaitForSeconds(jackpotTime);
             jackpotText.gameObject.SetActive(false);

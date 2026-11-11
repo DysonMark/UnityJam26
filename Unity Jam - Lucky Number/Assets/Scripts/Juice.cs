@@ -40,16 +40,22 @@ public static class Juice
         text.text = string.Format(format, to);
     }
 
-    // Jump to color, fade back to the original
-    public static IEnumerator Flash(Graphic graphic, Color color, float time = 0.3f)
+    // Metallic sweep across a button every few seconds while it can be pressed. stripe sits under a RectMask2D.
+    public static IEnumerator Shine(RectTransform stripe, Selectable button, float period = 2.5f, float time = 0.45f)
     {
-        Color start = graphic.color;
-        for (float t = 0; t < time; t += Time.deltaTime)
+        float edge = ((RectTransform)stripe.parent).rect.width / 2f + stripe.rect.width;
+        stripe.anchoredPosition = new Vector2(-edge, 0f);
+        while (true)
         {
-            graphic.color = Color.Lerp(color, start, t / time);
-            yield return null;
+            yield return new WaitForSeconds(period);
+            if (!button.interactable) continue;
+            for (float t = 0; t < time; t += Time.deltaTime)
+            {
+                stripe.anchoredPosition = new Vector2(Mathf.Lerp(-edge, edge, t / time), 0f);
+                yield return null;
+            }
+            stripe.anchoredPosition = new Vector2(-edge, 0f);
         }
-        graphic.color = start;
     }
 
     // Slow color pulse between the graphic's color and glow, forever, stop it with StopCoroutine.
@@ -65,7 +71,7 @@ public static class Juice
 
     // count coins arc from -> to, one every gap seconds. One loop moves all of them, so no MonoBehaviour needed.
     public static IEnumerator FlyCoins(RectTransform prefab, RectTransform from, RectTransform to,
-        int count = 6, float gap = 0.08f, float flightTime = 0.45f, float arcHeight = 60f)
+        int count = 6, float gap = 0.06f, float flightTime = 0.35f, float arcHeight = 60f)
     {
         Transform parent = from.GetComponentInParent<Canvas>().transform;
         var coins = new RectTransform[count];

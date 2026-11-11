@@ -22,7 +22,7 @@ namespace UnityJam.LuckyNumber.Interactions
         [SerializeField] private Color normalColor = Color.white;
         [SerializeField] private Color pickedColor = new Color(1f, 0.8f, 0.3f);
         [Tooltip("Delay use to show the color before the panel is disabled")]
-        [SerializeField] private float pickDelay = 0.5f;
+        [SerializeField] private float pickDelay = 0.3f;
         private static bool locked;
         public UnityEvent<int> onPicked;
 
