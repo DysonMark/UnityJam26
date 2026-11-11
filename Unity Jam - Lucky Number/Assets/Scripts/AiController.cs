@@ -6,9 +6,9 @@ using UnityEngine;
 public class AiController : MonoBehaviour
 {
     [SerializeField] private AiSeat[] seats;
-    [SerializeField] private float startDelay = 0.4f;
-    [SerializeField] private Vector2 thinkPause = new Vector2(0.15f, 0.45f);
-    [SerializeField] private float seatStagger = 0.3f;
+    [SerializeField] private float startDelay = 0.15f;
+    [SerializeField] private Vector2 thinkPause = new Vector2(0.05f, 0.2f);
+    [SerializeField] private float seatStagger = 0.15f;
     [SerializeField] private RectTransform pot;        // coins fly from here
     [SerializeField] private RectTransform coinPrefab;
     [SerializeField] private string[] names =

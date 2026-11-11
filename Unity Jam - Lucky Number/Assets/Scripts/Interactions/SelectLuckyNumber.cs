@@ -38,7 +38,6 @@ namespace UnityJam.LuckyNumber.Interactions
         {
             image = GetComponent<Image>();
             baseScale = transform.localScale;
-            if (normalSprite == null) normalSprite = hoverSprite = pressedSprite = image.sprite; // TEMP: null guard until Phase 2 wires the scene
         }
 
         private void Update()
