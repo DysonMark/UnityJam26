@@ -9,6 +9,7 @@ namespace UnityJam.LuckyNumber
         [SerializeField] private string gameSceneName = "Main";
         [SerializeField] private Button playButton;
         [SerializeField] private RectTransform playShine; // stripe swept across Play, under a RectMask2D
+        [SerializeField] private OptionsPanel optionsPanel;
 
         private void Start() => StartCoroutine(Juice.Shine(playShine, playButton));
 
@@ -19,7 +20,7 @@ namespace UnityJam.LuckyNumber
 
         public void Options()
         {
-
+            optionsPanel.Open();
         }
 
         public void QuitGame()
