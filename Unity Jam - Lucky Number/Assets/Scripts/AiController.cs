@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 // Runs the AI seats with pauses so it feels real
@@ -6,11 +7,12 @@ using UnityEngine;
 public class AiController : MonoBehaviour
 {
     [SerializeField] private AiSeat[] seats;
-    [SerializeField] private float startDelay = 0.15f;
-    [SerializeField] private Vector2 thinkPause = new Vector2(0.05f, 0.2f);
-    [SerializeField] private float seatStagger = 0.15f;
+    [SerializeField] private float startDelay = 0.05f;
+    [SerializeField] private Vector2 thinkPause = new Vector2(0.03f, 0.1f);
+    [SerializeField] private float seatStagger = 0.1f;
     [SerializeField] private RectTransform pot;        // coins fly from here
     [SerializeField] private RectTransform coinPrefab;
+    [SerializeField] private TMP_Text statusText;      // "The table is betting..." while the seats bet
     [SerializeField] private string[] names =
     {
         "Mr. Gray", "The Widow", "Lucky Sal", "Doc Malone", "Velvet", "Two-Bit Eddie",
@@ -40,15 +42,21 @@ public class AiController : MonoBehaviour
 
     public IEnumerator TakeBets(System.Random rng, int[] bets, int playerLucky)
     {
+        // Spotlight: every seat dims, each one lights up and pops when it bets
+        statusText.gameObject.SetActive(true);
+        DimAll(true);
         yield return new WaitForSeconds(startDelay);
         Coroutine last = null;
         for (int i = 0; i < seats.Length; i++)
         {
             yield return new WaitForSeconds(Random.Range(thinkPause.x, thinkPause.y));
+            seats[i].Dim(false);
+            StartCoroutine(Juice.Punch(seats[i].transform, 0.12f, 0.2f));
             last = StartCoroutine(SeatBet(seats[i], rng, bets[i], playerLucky));
             yield return new WaitForSeconds(seatStagger);
         }
         yield return last;
+        statusText.gameObject.SetActive(false);
     }
 
     public void DimAll(bool on)

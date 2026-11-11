@@ -677,7 +677,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 29aa2bf8efae6cdc98115d46bccdc0e0, type: 3}
   - {fileID: 2800000, guid: 2a100f418d88b9eeb959e0225dffc8a4, type: 3}
   - {fileID: 2800000, guid: 73a15eedb749a0ceca46cfab1b653a79, type: 3}
-  frameTime: 0.02
+  frameTime: 0.015
   idleSprite: {fileID: 0}
 --- !u!1 &7362317926093953479
 GameObject:
