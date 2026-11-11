@@ -27,6 +27,8 @@ public class ShopPanel : MonoBehaviour
 
     public int Money { get; private set; }
 
+    public Sprite Icon(Item item) => itemIcons[(int)item];
+
     private readonly Random rng = new Random();
     private Item[] offered;
     private bool[] sold;
@@ -85,6 +87,7 @@ public class ShopPanel : MonoBehaviour
         {
             bool canAfford = Money >= Price(i);
             slotButtons[i].interactable = !sold[i] && canAfford;
+            slotButtons[i].image.color = slotButtons[i].interactable ? Color.white : new Color(0.55f, 0.55f, 0.55f); // sold / too expensive
             slotPrices[i].color = sold[i] || canAfford ? priceColor : cantAffordColor;
         }
     }

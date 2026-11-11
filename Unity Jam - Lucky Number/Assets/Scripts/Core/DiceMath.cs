@@ -43,6 +43,13 @@ public static class DiceMath
         return roll >= skip ? roll + 1 : roll; //returns face value of the roll 1-6
     }
 
+    // Which roll strip to play for a face. Strips are 6 per angle, angle-major (angle 1 faces 1-6, angle 2 faces 1-6...),
+    // so 6 strips = one angle, 24 = four angles picked at random.
+    public static int StripIndex(Random rng, int stripCount, int face)
+    {
+        return rng.Next(stripCount / Faces) * Faces + face - 1;
+    }
+
     // unique numbers per AI, none should match to the players
     public static int[] AssignAiLuckyNumbers(Random rng, int playerLucky, int aiCount)
     {
@@ -100,9 +107,10 @@ public static class DiceMath
     // The player's second number pays whenever it's rolled, even if they bet something else (backup lucky number).
     // multiple winners = split pot / winnerCount, remainder carries
     // no winner = whole pot carries over
-    // Player's share is multiplied on a lucky (or second) number hit; the extra comes from the house.
+    // Player's share of this roll's antes is multiplied on a lucky (or second) number hit; the extra comes from the house.
+    // The carried-over part pays 1x, so a long dry spell can't turn into a multiplied one-shot.
     // pot = carryover + this roll's antes, the caller builds it each time (no persistent game state)
-    public static PotResult ResolvePot(int rolledNum, int[] bets, int pot,
+    public static PotResult ResolvePot(int rolledNum, int[] bets, int pot, int antes,
         int playerLuckyNum, int? playerSecond, float luckyMultiplier, float secondMultiplier)
     {
         bool playerWins = bets[0] == rolledNum || rolledNum == playerSecond;
@@ -123,7 +131,8 @@ public static class DiceMath
         else if (rolledNum == playerSecond) multiplier = secondMultiplier;
 
         // rounds down in the case of remainders from splitting
-        return new PotResult((int)(share * multiplier), carryover, winners);
+        int anteShare = Math.Min(antes, pot) / winners;
+        return new PotResult(share - anteShare + (int)(anteShare * multiplier), carryover, winners);
     }
 
     // Suspicion runs 0..1, caught at 1, it carries between tables

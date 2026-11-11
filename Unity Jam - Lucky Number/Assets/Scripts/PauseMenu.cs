@@ -14,12 +14,9 @@ namespace UnityJam.LuckyNumber.Menus
         private bool isPaused;
 
 
-        private void Awake()
-        {
-            actions = new InputSystem_Actions();
-        }
         private void OnEnable()
         {
+            actions ??= new InputSystem_Actions(); // here, not Awake: a script reload in Play mode clears it and skips Awake
             actions.Player.Pause.performed += OnPausePerformed;
             actions.Player.Enable();
         }

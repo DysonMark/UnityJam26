@@ -39,6 +39,26 @@ public class DiceTests
         }
     }
 
+    // Strip picked always lands on the asked face, and with 24 strips every angle gets used
+    [Test]
+    public void StripIndex_RightFace_AllAngles()
+    {
+        var rng = new Random(42);
+        for (int face = 1; face <= DiceMath.Faces; face++)
+        {
+            Assert.That(DiceMath.StripIndex(rng, 6, face), Is.EqualTo(face - 1));
+
+            var angles = new HashSet<int>();
+            for (int i = 0; i < 200; i++)
+            {
+                int index = DiceMath.StripIndex(rng, 24, face);
+                Assert.That(index % DiceMath.Faces, Is.EqualTo(face - 1), $"face {face}");
+                angles.Add(index / DiceMath.Faces);
+            }
+            Assert.That(angles.Count, Is.EqualTo(4), $"face {face}");
+        }
+    }
+
     [Test]
     public void RollLoaded_HitsLuckyAtLoadedChance_OtherFacesEven()
     {
@@ -200,7 +220,7 @@ public class DiceTests
     public void ResolvePot_SoloLuckyWin_PaysPotTimesMultiplier()
     {
         int[] bets = { 3, 1, 2, 4 };
-        var result = DiceMath.ResolvePot(3, bets, 40, PlayerLucky, null, 2f, 1.5f);
+        var result = DiceMath.ResolvePot(3, bets, 40, 40, PlayerLucky, null, 2f, 1.5f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(80));
         Assert.That(result.Carryover, Is.EqualTo(0));
@@ -208,11 +228,22 @@ public class DiceTests
     }
 
     [Test]
+    public void ResolvePot_CarriedPot_PaysOneX_OnlyAntesMultiplied()
+    {
+        // 200 carried + 40 antes, solo lucky hit x3: 200 + 40 * 3 = 320, not 240 * 3 = 720.
+        int[] bets = { 3, 1, 2, 4 };
+        var result = DiceMath.ResolvePot(3, bets, 240, 40, PlayerLucky, null, 3f, 1.5f);
+
+        Assert.That(result.PlayerPayout, Is.EqualTo(320));
+        Assert.That(result.Carryover, Is.EqualTo(0));
+    }
+
+    [Test]
     public void ResolvePot_UnevenSplit_RemainderCarriesOver()
     {
         // Open number 5, player + 2 AIs bet it: 50 / 3 = 16 each, 2 left over.
         int[] bets = { 5, 5, 5, 4 };
-        var result = DiceMath.ResolvePot(5, bets, 50, PlayerLucky, null, 2f, 1.5f);
+        var result = DiceMath.ResolvePot(5, bets, 50, 50, PlayerLucky, null, 2f, 1.5f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(16));
         Assert.That(result.Carryover, Is.EqualTo(2));
@@ -223,7 +254,7 @@ public class DiceTests
     public void ResolvePot_NoWinner_WholePotCarries()
     {
         int[] bets = { 3, 1, 2, 4 };
-        var result = DiceMath.ResolvePot(6, bets, 40, PlayerLucky, null, 2f, 1.5f);
+        var result = DiceMath.ResolvePot(6, bets, 40, 40, PlayerLucky, null, 2f, 1.5f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(0));
         Assert.That(result.Carryover, Is.EqualTo(40));
@@ -235,7 +266,7 @@ public class DiceTests
     {
         // Second number 5 is an open number, only the player bet it.
         int[] bets = { 5, 1, 2, 4 };
-        var result = DiceMath.ResolvePot(5, bets, 40, PlayerLucky, 5, 2f, 1.5f);
+        var result = DiceMath.ResolvePot(5, bets, 40, 40, PlayerLucky, 5, 2f, 1.5f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(60));
         Assert.That(result.Carryover, Is.EqualTo(0));
@@ -247,7 +278,7 @@ public class DiceTests
     {
         // Player bet lucky 3, second is 5, 5 rolls, AI 2 also bet 5: split 40 / 2 = 20, x1.25.
         int[] bets = { 3, 1, 5, 4 };
-        var result = DiceMath.ResolvePot(5, bets, 40, PlayerLucky, 5, 2f, 1.25f);
+        var result = DiceMath.ResolvePot(5, bets, 40, 40, PlayerLucky, 5, 2f, 1.25f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(25));
         Assert.That(result.Carryover, Is.EqualTo(0));
@@ -258,7 +289,7 @@ public class DiceTests
     public void ResolvePot_OnlyAiWins_PlayerGetsNothing_NothingCarries()
     {
         int[] bets = { 3, 1, 2, 4 };
-        var result = DiceMath.ResolvePot(1, bets, 40, PlayerLucky, null, 2f, 1.5f);
+        var result = DiceMath.ResolvePot(1, bets, 40, 40, PlayerLucky, null, 2f, 1.5f);
 
         Assert.That(result.PlayerPayout, Is.EqualTo(0));
         Assert.That(result.Carryover, Is.EqualTo(0));
@@ -504,7 +535,9 @@ public class DiceTests
             pot += cfg.ante * bets.Length;
 
             float next = DiceMath.StreakRise(cfg.suspicionPerLuckyRoll, streak, cfg.streakBonus);
-            bool load = loaded && (!careful || rabbitsFoot || suspicion + next < 1f);
+            // (float) cast: Unity can compare the sum at double precision, 0.775 + 0.225 reads as just under 1
+            // there but stores as exactly 1, so the careful bot loaded into getting caught
+            bool load = loaded && (!careful || rabbitsFoot || !DiceMath.IsCaught((float)(suspicion + next)));
             bets[0] = playerLucky;
             for (int i = 0; i < aiLucky.Length; i++)
                 bets[i + 1] = DiceMath.PickAiBet(rng, aiLucky[i], cfg.aiRandomBetChance, playerLucky,
@@ -512,7 +545,7 @@ public class DiceTests
 
             int rolled = load ? DiceMath.RollLoaded(rng, playerLucky, cfg.loadedChance) : DiceMath.RollClean(rng);
 
-            var result = DiceMath.ResolvePot(rolled, bets, pot, playerLucky, playerSecond,
+            var result = DiceMath.ResolvePot(rolled, bets, pot, cfg.ante * bets.Length, playerLucky, playerSecond,
                 cfg.luckyMultiplier, cfg.secondMultiplier);
             money += result.PlayerPayout;
             pot = result.Carryover;

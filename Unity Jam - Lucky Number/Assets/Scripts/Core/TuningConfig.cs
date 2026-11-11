@@ -28,5 +28,5 @@ public class TuningConfig : ScriptableObject
     [Range(0f, 1f)] public float highRollerSuspicion = 0.05f; // added to suspicionPerLuckyRoll
     [Range(0f, 1f)] public float steadyHandsCut = 0.05f;      // taken off suspicionPerLuckyRoll
     [Range(0f, 1f)] public float bribeAmount = 0.2f;          // taken off suspicion when the table starts
-    public int extraRolls = 2;                                 // added to rolls left when played
+    public int extraRolls = 1;                                 // added to rolls left when played
 }
