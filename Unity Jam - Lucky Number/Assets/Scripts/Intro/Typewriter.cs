@@ -56,8 +56,6 @@ namespace UnityJam.LuckyNumber.Intro
 
             for (int i = 1; i <= total; i++)
             {
-                if (skip) break;
-
                 text.maxVisibleCharacters = i;
                 char shown = text.textInfo.characterInfo[i - 1].character;
                 char next = i < total ? text.textInfo.characterInfo[i].character : '\0';
@@ -66,6 +64,9 @@ namespace UnityJam.LuckyNumber.Intro
                     PlayBlip();
 
                 yield return Wait(GetDelay(shown, next));
+
+                if (skip) 
+                    break;
             }
 
             text.maxVisibleCharacters = total;

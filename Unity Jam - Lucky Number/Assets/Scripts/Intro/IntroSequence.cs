@@ -20,6 +20,9 @@ namespace UnityJam.LuckyNumber.Intro
         [SerializeField] private float holdBase = 1.2f;
         [SerializeField] private float holdPerChar = 0.035f;
 
+        [Header("Lighting")]
+        [SerializeField] private IntroEffects lights;
+
         [Header("Next scene")]
         [SerializeField] private string mainSceneName = "Main";
 
@@ -37,25 +40,44 @@ namespace UnityJam.LuckyNumber.Intro
                 StartCoroutine(FadeVolume(music, 0f, musicVolume, fadeInTime));
             }
 
-            foreach (string line in lines)
+            for (int i = 0; i < lines.Length; i++)
             {
+                string line = lines[i];
+
+                if (lights != null)
+                    lights.SetBeat(i);
+
                 typewriter.Play(line);
 
+                bool isCompletedByPress = false;
                 while (typewriter.IsTyping)
                 {
-                    if (PressedThisFrame()) 
+                    if (PressedThisFrame())
+                    {
                         typewriter.Advance();
+                        while (typewriter.IsTyping)
+                            yield return null;
+                        isCompletedByPress = true;
+                        break;
+                    }
+                    yield return null;
+                }
+
+                if (isCompletedByPress)
+                {
+                    while (typewriter.IsTyping)
+                        yield return null;
                     yield return null;
                 }
 
                 float hold = holdBase + line.Length * holdPerChar;
                 float t = 0f;
-                yield return null;
                 while (t < hold && !PressedThisFrame())
                 {
                     t += Time.deltaTime;
                     yield return null;
                 }
+                yield return null;
             }
 
             if (music != null)
