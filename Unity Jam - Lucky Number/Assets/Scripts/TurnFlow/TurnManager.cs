@@ -20,6 +20,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private RectTransform anteShine; // stripe swept across Pay Ante, under a RectMask2D
         [SerializeField] private Button cleanButton;
         [SerializeField] private Button loadedButton;
+        [SerializeField] private TMP_Text loadedRiskText; // Loaded subtitle: the suspicion a hit would add
         [SerializeField] private GameObject luckyNumberPanel;
         [SerializeField] private GameObject betPanel;
         [SerializeField] private ItemTray itemTray;         // on betPanel, one-time item buttons
@@ -27,6 +28,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private TMP_Text rollResultText;
         [SerializeField] private TMP_Text anteValueText;
         [SerializeField] private TMP_Text hudMoneyText;
+        [SerializeField] private Image moneyBar;            // wallet fill toward this table's target
         [SerializeField] private DieRoller cleanDie;        // white die above the Clean button
         [SerializeField] private DieRoller loadedDie;       // red die above the Loaded button
         [SerializeField] private AiController aiController;
@@ -140,8 +142,9 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerLucky = 0;
             aiLucky = new int[AiCount];
             aiBets = new int[AiCount];
+            aiController.ClearLucky();
             luckyLabel.text = "?";
-            luckyDie.enabled = false;
+            luckyDie.gameObject.SetActive(false);
             ShowLuckyPair(false);
             betLabel.text = "?";
             anteValueText.text = "-" + config.ante.ToString();
@@ -188,7 +191,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerLucky = number;
             playerSecond = null;
             luckyDie.sprite = luckyFaces[number - 1];
-            luckyDie.enabled = true;
+            luckyDie.gameObject.SetActive(true);
             luckyLabel.text = ""; // the die shows it
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
@@ -208,7 +211,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         // One die centred, or the lucky + second dice side by side, centred as a pair
         private void ShowLuckyPair(bool pair)
         {
-            secondDie.enabled = pair;
+            secondDie.gameObject.SetActive(pair);
             RectTransform die = luckyDie.rectTransform;
             die.anchoredPosition = new Vector2(pair ? -secondDie.rectTransform.anchoredPosition.x : 0f, die.anchoredPosition.y);
         }
@@ -262,6 +265,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                 shownMoney = money;
             }
             potLabel.text = $"POT <color=#E58929>${pot}</color>";
+            moneyBar.fillAmount = Mathf.Clamp01((float)money / config.cashTarget);
             infoPanel.Refresh(money, pot, rollsLeft, config.cashTarget, tableIndex + 1, suspicionMeter.Value);
         }
 
@@ -302,6 +306,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             cleanDie.gameObject.SetActive(true);
             loadedDie.gameObject.SetActive(true);
             rollResultText.text = "";
+            float risk = rabbitsFoot ? 0f : DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
+            loadedRiskText.text = $"draws eyes: +{Mathf.RoundToInt(risk * 100f)}% on a hit";
             cleanDie.Idle();
             loadedDie.Idle();
             diePanel.SetActive(true);

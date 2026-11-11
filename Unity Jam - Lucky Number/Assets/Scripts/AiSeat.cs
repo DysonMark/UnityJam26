@@ -8,6 +8,7 @@ public class AiSeat : MonoBehaviour
 {
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image luckyImage;
+    [SerializeField] private TMP_Text luckyUnknown; // "?" until the table's lucky numbers are dealt
     [SerializeField] private Sprite[] luckyFaces;   // UI dice faces 1-6
     [SerializeField] private TMP_Text chipText;
     [SerializeField] private Image chipImage;
@@ -31,7 +32,19 @@ public class AiSeat : MonoBehaviour
 
     public void SetName(string seatName) => nameText.text = seatName;
 
-    public void SetLucky(int face) => luckyImage.sprite = luckyFaces[face - 1];
+    public void SetLucky(int face)
+    {
+        luckyImage.sprite = luckyFaces[face - 1];
+        ShowLucky(true);
+    }
+
+    public void ClearLucky() => ShowLucky(false);
+
+    private void ShowLucky(bool known)
+    {
+        luckyImage.gameObject.SetActive(known); // twinkle child goes with it
+        luckyUnknown.gameObject.SetActive(!known);
+    }
 
     // Waiting state: chip "?", no die, ON YOU cleared, full alpha
     public void ResetForAnte()

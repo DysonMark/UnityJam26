@@ -35,6 +35,11 @@ public class AiController : MonoBehaviour
         for (int i = 0; i < seats.Length; i++) seats[i].SetLucky(aiLucky[i]);
     }
 
+    public void ClearLucky()
+    {
+        foreach (AiSeat seat in seats) seat.ClearLucky();
+    }
+
     public void Ante()
     {
         foreach (AiSeat seat in seats) seat.ResetForAnte();

@@ -58,13 +58,16 @@ public static class Juice
         }
     }
 
-    // Slow color pulse between the graphic's color and glow, forever, stop it with StopCoroutine.
-    public static IEnumerator Pulse(Graphic graphic, Color glow, float period = 1.6f)
+    // Slow pulse forever: colour toward glow and a gentle swell in step, stop it with StopCoroutine.
+    public static IEnumerator Pulse(Graphic graphic, Color glow, float period = 1.6f, float grow = 0.08f)
     {
         Color start = graphic.color;
+        Vector3 size = graphic.transform.localScale;
         for (float t = 0; ; t += Time.deltaTime)
         {
-            graphic.color = Color.Lerp(start, glow, Mathf.PingPong(t * 2f / period, 1f));
+            float k = Mathf.SmoothStep(0f, 1f, Mathf.PingPong(t * 2f / period, 1f));
+            graphic.color = Color.Lerp(start, glow, k);
+            graphic.transform.localScale = size * (1f + grow * k);
             yield return null;
         }
     }
