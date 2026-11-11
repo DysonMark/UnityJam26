@@ -87,6 +87,7 @@ public class ShopPanel : MonoBehaviour
         {
             bool canAfford = Money >= Price(i);
             slotButtons[i].interactable = !sold[i] && canAfford;
+            slotButtons[i].image.color = slotButtons[i].interactable ? Color.white : new Color(0.55f, 0.55f, 0.55f); // sold / too expensive
             slotPrices[i].color = sold[i] || canAfford ? priceColor : cantAffordColor;
         }
     }
