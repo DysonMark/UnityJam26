@@ -37,7 +37,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         public void Refresh(int money, int pot, int rollsLeft, int target, int table, float suspicion)
         {
             tableText.text = $"Table {table}";
-            moneyText.text = $"{money} <size=50%><color=#A39A88>/ {target}</color></size>";
+            moneyText.text = $"{money} <size=70%><color=#A39A88>/ {target}</color></size>";
             potText.text = $"Pot \n{pot}";
             int total = config.rollsPerTable;
             int lit = Mathf.Clamp(Mathf.CeilToInt(rollDots.Length * (float)rollsLeft / Mathf.Max(1, total)), 0, rollDots.Length);

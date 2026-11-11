@@ -245,7 +245,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             if (money != shownMoney)
             {
                 if (moneyCount != null) StopCoroutine(moneyCount);
-                string format = "{0} <size=50%><color=#A39A88>/ " + config.cashTarget + "</color></size>";
+                string format = "{0} <size=70%><color=#A39A88>/ " + config.cashTarget + "</color></size>";
                 moneyCount = StartCoroutine(Juice.CountUp(hudMoneyText, shownMoney, money, 0.5f, format));
                 shownMoney = money;
             }

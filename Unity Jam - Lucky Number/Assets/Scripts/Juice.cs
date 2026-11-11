@@ -29,7 +29,7 @@ public static class Juice
         target.anchoredPosition = start;
     }
 
-    // format gets the current value as {0}, e.g. "{0} <size=50%>/ 500</size>"
+    // format gets the current value as {0}, e.g. "{0} <size=70%>/ 500</size>"
     public static IEnumerator CountUp(TMP_Text text, int from, int to, float time = 0.5f, string format = "{0}")
     {
         for (float t = 0; t < time; t += Time.deltaTime)
