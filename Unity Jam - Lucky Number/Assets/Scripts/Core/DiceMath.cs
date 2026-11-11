@@ -107,9 +107,10 @@ public static class DiceMath
     // The player's second number pays whenever it's rolled, even if they bet something else (backup lucky number).
     // multiple winners = split pot / winnerCount, remainder carries
     // no winner = whole pot carries over
-    // Player's share is multiplied on a lucky (or second) number hit; the extra comes from the house.
+    // Player's share of this roll's antes is multiplied on a lucky (or second) number hit; the extra comes from the house.
+    // The carried-over part pays 1x, so a long dry spell can't turn into a multiplied one-shot.
     // pot = carryover + this roll's antes, the caller builds it each time (no persistent game state)
-    public static PotResult ResolvePot(int rolledNum, int[] bets, int pot,
+    public static PotResult ResolvePot(int rolledNum, int[] bets, int pot, int antes,
         int playerLuckyNum, int? playerSecond, float luckyMultiplier, float secondMultiplier)
     {
         bool playerWins = bets[0] == rolledNum || rolledNum == playerSecond;
@@ -130,7 +131,8 @@ public static class DiceMath
         else if (rolledNum == playerSecond) multiplier = secondMultiplier;
 
         // rounds down in the case of remainders from splitting
-        return new PotResult((int)(share * multiplier), carryover, winners);
+        int anteShare = Math.Min(antes, pot) / winners;
+        return new PotResult(share - anteShare + (int)(anteShare * multiplier), carryover, winners);
     }
 
     // Suspicion runs 0..1, caught at 1, it carries between tables

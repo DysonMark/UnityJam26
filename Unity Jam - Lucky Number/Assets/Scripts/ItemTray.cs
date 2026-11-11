@@ -20,7 +20,7 @@ public class ItemTray : MonoBehaviour
         {
             Button button = Instantiate(buttonPrefab, transform);
             button.GetComponentInChildren<TMP_Text>().text = $"Use {Shop.Names[(int)item]}";
-            button.transform.Find("Icon").GetComponent<Image>().sprite = shop.Icon(item);
+            if (shop != null) button.transform.Find("Icon").GetComponent<Image>().sprite = shop.Icon(item); // TEMP: null guard until Phase 2 wires the scene
             button.gameObject.AddComponent<ButtonJuice>(); // spawned after the scene hook ran
             Item played = item;
             button.onClick.AddListener(() => onPlayed.Invoke(played));

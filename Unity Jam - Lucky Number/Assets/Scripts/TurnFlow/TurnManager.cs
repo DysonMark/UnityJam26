@@ -146,15 +146,15 @@ namespace UnityJam.LuckyNumber.TurnFlow
             luckyLabel.text = "-";
             betLabel.text = "-";
             anteValueText.text = "-" + config.ante.ToString();
-            aiController.Ante();
+            if (aiController != null) aiController.Ante(); // TEMP: null guard until Phase 2 wires the scene
 
             luckyNumberPanel.SetActive(false);
             betPanel.SetActive(false);
             diePanel.SetActive(false);
             payAnteButton.interactable = true;
             leaveButton.gameObject.SetActive(false);
-            streakText.gameObject.SetActive(false);
-            jackpotText.gameObject.SetActive(false);
+            if (streakText != null) streakText.gameObject.SetActive(false); // TEMP: null guard until Phase 2 wires the scene
+            if (jackpotText != null) jackpotText.gameObject.SetActive(false); // TEMP: null guard until Phase 2 wires the scene
 
             UpdatePanel();
             StartCoroutine(Banner());
@@ -162,6 +162,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         private IEnumerator Banner()
         {
+            if (bannerPanel == null || bannerText == null) yield break; // TEMP: null guard until Phase 2 wires the scene
             bannerText.text = $"TABLE {tableIndex + 1}\n<size=60%>Make ${config.cashTarget} in {config.rollsPerTable} rolls</size>";
             bannerPanel.SetActive(true);
             yield return Juice.Punch(bannerPanel.transform, 0.3f, 0.25f);
@@ -187,7 +188,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             playerSecond = null;
             aiLucky = DiceMath.AssignAiLuckyNumbers(rng, playerLucky, AiCount);
             openNumbers = DiceMath.OpenNumbers(playerLucky, aiLucky);
-            aiController.SetLucky(aiLucky);
+            if (aiController != null) aiController.SetLucky(aiLucky); // TEMP: null guard until Phase 2 wires the scene
 
             if (owned.Contains(Item.SecondNumber))
             {
@@ -215,7 +216,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
                     config.copycatChance, heat, i == 0 ? config.chaserChance : 0f, lastRoll); // AI 1 is the chaser
 
             UpdatePanel();
-            yield return aiController.TakeBets(rng, aiBets, playerLucky);
+            if (aiController != null) yield return aiController.TakeBets(rng, aiBets, playerLucky); // TEMP: null guard until Phase 2 wires the scene
             itemTray.Show(unplayed);
             betPanel.SetActive(true);
         }
@@ -263,10 +264,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
             leaveButton.gameObject.SetActive(false);
             money -= config.ante;
             pot += config.ante * 4;
-            StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "-" + config.ante));
+            if (floatTextPrefab != null) StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "-" + config.ante)); // TEMP: null guard until Phase 2 wires the scene
 
             payAnteButton.interactable = false;
-            aiController.Ante();
+            if (aiController != null) aiController.Ante(); // TEMP: null guard until Phase 2 wires the scene
             UpdatePanel();
 
             if (playerLucky == 0)
@@ -283,9 +284,13 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             cleanButton.interactable = true;
             loadedButton.interactable = true;
+            cleanButton.gameObject.SetActive(true);
+            loadedButton.gameObject.SetActive(true);
+            cleanDie.gameObject.SetActive(true);
+            loadedDie.gameObject.SetActive(true);
             rollResultText.text = "";
-            cleanDie.Idle();
-            loadedDie.Idle();
+            if (cleanDie != null) cleanDie.Idle(); // TEMP: null guard until Phase 2 wires the scene
+            if (loadedDie != null) loadedDie.Idle(); // TEMP: null guard until Phase 2 wires the scene
             diePanel.SetActive(true);
         }
 
@@ -304,11 +309,14 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             cleanButton.interactable = false;
             loadedButton.interactable = false;
-            aiController.DimAll(true);
+            if (aiController != null) aiController.DimAll(true); // TEMP: null guard until Phase 2 wires the scene
             DieRoller die = usedLoaded ? loadedDie : cleanDie;
-            yield return die.Roll(rng, rolledNumber);
+            // hide the set not picked while the chosen die rolls
+            (usedLoaded ? cleanButton : loadedButton).gameObject.SetActive(false);
+            (usedLoaded ? cleanDie : loadedDie).gameObject.SetActive(false);
+            if (die != null) yield return die.Roll(rng, rolledNumber); // TEMP: null guard until Phase 2 wires the scene
             bool jackpot = rolledNumber == playerLucky;
-            Land(die.transform, jackpot ? 14f : 6f); // one shake at a time, two would drift the table
+            if (die != null) Land(die.transform, jackpot ? 14f : 6f); // TEMP: null guard until Phase 2 wires the scene // one shake at a time, two would drift the table
             if (jackpot) StartCoroutine(Jackpot());
             rollResultText.text = $"Rolled: {rolledNumber}";
             yield return new WaitForSeconds(showResultAfterTime);
@@ -317,8 +325,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
             int before = money;
             ResolvePayout();
             bool won = money > before;
-            yield return aiController.Payout(rolledNumber, aiBets, won ? hudMoneyText.rectTransform : null);
-            if (won) StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "+" + (money - before)));
+            if (aiController != null) yield return aiController.Payout(rolledNumber, aiBets, won ? hudMoneyText.rectTransform : null); // TEMP: null guard until Phase 2 wires the scene
+            if (won && floatTextPrefab != null) StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "+" + (money - before)));
             bool loadedHit = usedLoaded && rolledNumber == playerLucky;
             float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
             if (rabbitsFoot && loadedHit)
@@ -340,7 +348,8 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private void Land(Transform die, float shake)
         {
             StartCoroutine(Juice.Punch(die, 0.25f));
-            StartCoroutine(Juice.Shake(table, shake, 0.3f));
+            if (table != null) StartCoroutine(Juice.Shake(table, shake, 0.3f)); // TEMP: null guard until Phase 2 wires the scene
+            if (landDust == null || landFlash == null) return; // TEMP: null guard until Phase 2 wires the scene
             landDust.transform.position = die.position;
             landFlash.transform.position = die.position;
             landDust.Play();
@@ -350,6 +359,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         // rolled the player's lucky number
         private IEnumerator Jackpot()
         {
+            if (jackpotText == null || confetti == null || flashOverlay == null) yield break; // TEMP: null guard until Phase 2 wires the scene
             jackpotText.text = $"LUCKY {rolledNumber}!";
             jackpotText.gameObject.SetActive(true);
             confetti.Play();
@@ -362,6 +372,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         // loaded lucky hits in a row. Shown from 2, each hit also raises suspicion more (StreakRise)
         private void ShowStreak()
         {
+            if (streakText == null || streakBurst == null) return; // TEMP: null guard until Phase 2 wires the scene
             streakText.gameObject.SetActive(streak >= 2);
             if (streak < 2) return;
             streakText.text = $"HOT x{streak}";
@@ -373,7 +384,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             int[] bets = { playerBet, aiBets[0], aiBets[1], aiBets[2] };
 
-            PotResult result = DiceMath.ResolvePot(rolledNumber, bets, pot, playerLucky, playerSecond, config.luckyMultiplier, config.secondMultiplier);
+            PotResult result = DiceMath.ResolvePot(rolledNumber, bets, pot, config.ante * bets.Length, playerLucky, playerSecond, config.luckyMultiplier, config.secondMultiplier);
 
             money += result.PlayerPayout;
             pot = result.Carryover;
