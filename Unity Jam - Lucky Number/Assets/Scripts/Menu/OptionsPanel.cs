@@ -24,7 +24,7 @@ namespace UnityJam.LuckyNumber
         [SerializeField] private Toggle fullscreenToggle;
 
         const string P_Master = "MasterVol", P_Music = "MusicVol", P_SFX = "SFXVol";
-        const string K_Master = "vol_master", K_Music = "vol_music", K_SFX = "vol_sfx", K_Full = "fullscreen";
+        const string K_Master = "vol_master", K_Music = "vol_music", K_SFX = "vol_sfx";
 
         private void Awake()
         {
@@ -32,13 +32,12 @@ namespace UnityJam.LuckyNumber
             masterSlider.normalizedValue = PlayerPrefs.GetFloat(K_Master, 0.8f);
             musicSlider.normalizedValue = PlayerPrefs.GetFloat(K_Music, 0.6f);
             sfxSlider.normalizedValue = PlayerPrefs.GetFloat(K_SFX, 0.7f);
-            fullscreenToggle.isOn = PlayerPrefs.GetInt(K_Full, 1) == 1;
+            fullscreenToggle.SetIsOnWithoutNotify(Screen.fullScreen); // show it only: browsers refuse fullscreen without a click
 
             // applying them
             ApplyMaster(0); 
             ApplyMusic(0); 
             ApplySFX(0);
-            ApplyFullscreen(fullscreenToggle.isOn);
 
             // react to changes
             masterSlider.onValueChanged.AddListener(ApplyMaster);
@@ -78,7 +77,6 @@ namespace UnityJam.LuckyNumber
         private void ApplyFullscreen(bool on)
         {
             Screen.fullScreen = on;
-            PlayerPrefs.SetInt(K_Full, on ? 1 : 0);
         }
     }
 }

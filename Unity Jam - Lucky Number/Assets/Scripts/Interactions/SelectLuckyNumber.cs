@@ -1,5 +1,4 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -10,7 +9,6 @@ namespace UnityJam.LuckyNumber.Interactions
     public class SelectLuckyNumber : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
         IPointerDownHandler, IPointerUpHandler
     {
-        [SerializeField] private TextMeshProUGUI selectedLuckyText;
         [SerializeField] private int number = 1;
         [SerializeField] private float hoverScale = 1.15f;
         [SerializeField] private float pickedScale = 1.25f;
@@ -69,7 +67,6 @@ namespace UnityJam.LuckyNumber.Interactions
             current = this;
             yield return new WaitForSecondsRealtime(pickDelay);
             locked = false;
-            selectedLuckyText.text = number.ToString(); // before onPicked so TurnManager can add the second number
             onPicked?.Invoke(number);
             Debug.Log("Lucky number picked: " + number);
         }
