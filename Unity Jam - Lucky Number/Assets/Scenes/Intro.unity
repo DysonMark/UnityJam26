@@ -899,9 +899,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnityJam.LuckyNumber.Intro.Typewriter
   text: {fileID: 446481982}
-  charDelay: 0.04
+  charDelay: 0.06
   commaPause: 0.15
-  sentencePause: 0.3
+  sentencePause: 0.4
   ellipsisPause: 0.15
   audioSource: {fileID: 816208758}
   blips:
@@ -2301,7 +2301,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -3116893470958515226, guid: cd5185ec0623f8b4ebba7d5b4d2aec28, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: a6d936ef79060ca42a0b115e26174cc4, type: 3}
+  m_Resource: {fileID: 8300000, guid: a2ce80ba7f811fc458f5f728a5e948bf, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
