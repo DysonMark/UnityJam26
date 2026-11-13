@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityJam.LuckyNumber.Audio;
 
 // Win = all 3 tables are beat, a single win will display the shop UI
 public enum EndReason
@@ -43,6 +44,7 @@ public class EndScreen : MonoBehaviour
         messageText.text = Messages[(int)reason];
         moneyText.text = "$" + money;
         uiPanel.SetActive(true);
+        if (reason == EndReason.Caught && AudioManager.Instance != null) AudioManager.Instance.Caught();
     }
     
     public void Restart()
