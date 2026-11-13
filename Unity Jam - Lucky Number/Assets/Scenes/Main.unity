@@ -10576,18 +10576,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1564122508}
     m_Modifications:
-    - target: {fileID: 3028282322585134681, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 2000294520}
-    - target: {fileID: 3097587276251603986, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_text
-      value: Close
-      objectReference: {fileID: 0}
-    - target: {fileID: 3783503876222657171, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_Name
-      value: Close_Button
-      objectReference: {fileID: 0}
     - target: {fileID: 4180959801291289658, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -10692,10 +10680,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -20
       objectReference: {fileID: 0}
-    - target: {fileID: 5187642339964876508, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_Name
-      value: Close_Button
-      objectReference: {fileID: 0}
     - target: {fileID: 5634917986578901050, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -10716,10 +10700,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Guide-Panel
       objectReference: {fileID: 0}
-    - target: {fileID: 6178543146819982223, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_text
-      value: Close
-      objectReference: {fileID: 0}
     - target: {fileID: 6438233367457671383, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -10736,10 +10716,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -20
       objectReference: {fileID: 0}
-    - target: {fileID: 6956619149393230978, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_Name
-      value: Close_Button
-      objectReference: {fileID: 0}
     - target: {fileID: 8355475703241058569, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -10747,10 +10723,6 @@ PrefabInstance:
     - target: {fileID: 8368090788386659602, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_IsActive
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8613246509816776769, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
-      propertyPath: m_text
-      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 8656020228588384703, guid: 30411a94b0a9e0c4c823457577f0e5ee, type: 3}
       propertyPath: m_AnchorMax.y
