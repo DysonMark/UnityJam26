@@ -65,6 +65,7 @@ namespace UnityJam.LuckyNumber.Meters
         {
             int change = Mathf.RoundToInt((suspicion - before) * 100f);
             if (change == 0) return;
+            AudioManager.Sfx(change > 0 ? "SuspicionUp" : "SuspicionDown");
             StartCoroutine(Juice.FloatText(floatTextPrefab, floatFrom, (change > 0 ? "+" : "") + change + "%"));
         }
     }

@@ -31,6 +31,10 @@ namespace UnityJam.LuckyNumber.Audio
         [Tooltip("Loops the exact length of the base loop. Each fades in once suspicion reaches its Layer At value.")]
         [SerializeField] private AudioClip[] layers = new AudioClip[2];
         [SerializeField] private float[] layerAt = { 0.3f, 0.65f };
+        [Tooltip("Whole music level, under the Options slider. Leaves room for the SFX.")]
+        [SerializeField, Range(0f, 1f)] private float musicVolume = 0.7f;
+        [Tooltip("Each layer's level relative to the base: base + every layer at 1 is ~6 dB louder and clips.")]
+        [SerializeField, Range(0f, 1f)] private float layerVolume = 0.6f;
         [SerializeField] private float fadeIn = 1.5f;
         [SerializeField] private float fadeOut = 2.5f;
         [SerializeField] private float caughtFade = 0.3f;
@@ -96,10 +100,10 @@ namespace UnityJam.LuckyNumber.Audio
         private void Update()
         {
             if (layerSources == null) return;
-            float on = quiet || caught ? 0f : Menus.PauseMenu.IsPaused ? pausedVolume : 1f;
+            float on = quiet || caught ? 0f : (Menus.PauseMenu.IsPaused ? pausedVolume : 1f) * musicVolume;
             Fade(musicSource, on);
             for (int i = 0; i < layerSources.Length; i++)
-                Fade(layerSources[i], suspicion >= layerAt[i] ? on : 0f);
+                Fade(layerSources[i], suspicion >= layerAt[i] ? on * layerVolume : 0f);
         }
 
         private void Fade(AudioSource source, float target)
@@ -127,6 +131,12 @@ namespace UnityJam.LuckyNumber.Audio
         }
 
         // --- playing sounds --- //
+
+        // game code calls this: safe when no manager is loaded
+        public static void Sfx(string soundName)
+        {
+            if (Instance != null) Instance.PlaySFX(soundName);
+        }
 
         public void PlaySFX(string soundName)
         {

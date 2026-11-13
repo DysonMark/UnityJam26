@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityJam.LuckyNumber.Audio;
 using UnityEngine.UI;
 
 // One AI seat + it's visuals
@@ -59,6 +60,7 @@ public class AiSeat : MonoBehaviour
     public IEnumerator RollBet(System.Random rng, int bet)
     {
         yield return die.Roll(rng, bet);
+        AudioManager.Sfx("AiBet");
         chipText.text = bet.ToString();
         yield return Juice.Punch(chipText.transform);
     }

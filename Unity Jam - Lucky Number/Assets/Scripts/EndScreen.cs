@@ -45,6 +45,8 @@ public class EndScreen : MonoBehaviour
         moneyText.text = "$" + money;
         uiPanel.SetActive(true);
         if (reason == EndReason.Caught && AudioManager.Instance != null) AudioManager.Instance.Caught();
+        else if (reason == EndReason.Broke) AudioManager.Sfx("Broke");
+        else if (reason == EndReason.OutOfRolls) AudioManager.Sfx("OutOfRolls");
     }
     
     public void Restart()

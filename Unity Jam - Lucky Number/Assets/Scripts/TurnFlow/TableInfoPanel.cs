@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using TMPro;
 using UnityEngine;
+using UnityJam.LuckyNumber.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -55,7 +56,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
         private void Update()
         {
             if (Keyboard.current.tabKey.wasPressedThisFrame)
+            {
                 panel.SetActive(!panel.activeSelf);
+                AudioManager.Sfx("TabOpen");
+            }
         }
     }
 }
