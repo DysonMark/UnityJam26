@@ -17,7 +17,6 @@ namespace UnityJam.LuckyNumber.TurnFlow
         [SerializeField] private TMP_Text rollsLeftText;
         [SerializeField] private TMP_Text targetMoneyText;
         [SerializeField] private TMP_Text suspicionText; // optional, cloned from targetMoneyText when not set
-        [SerializeField] private UnityEngine.UI.Slider suspicionSlider;
         [SerializeField] private UnityEngine.UI.Slider moneyGauge;
         [SerializeField] private UnityEngine.UI.Image[] rollDots;
         [SerializeField] private Color rollOn = Color.white;
@@ -46,8 +45,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
             rollsLeftText.text = $"{rollsLeft} out of {total}";
             targetMoneyText.text = $"Target Money: {target}";
-            float frac = Mathf.InverseLerp(suspicionSlider.minValue, suspicionSlider.maxValue, suspicionSlider.value);
-            suspicionText.text = $"Suspicion\n{frac:P0}"; // two lines, like the pot
+            suspicionText.text = $"Suspicion\n{Mathf.RoundToInt(suspicion * 100f)}%"; // the real value: the meter's slider is still animating toward it
 
             moneyGauge.maxValue = Mathf.Max(1, target);
             moneyGauge.value = money;
