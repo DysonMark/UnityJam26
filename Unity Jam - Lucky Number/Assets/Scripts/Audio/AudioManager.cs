@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using NUnit.Framework;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,8 +12,8 @@ namespace UnityJam.LuckyNumber.Audio
         public class Sound
         {
             public string name;
-            public AudioClip clip;
-            [UnityEngine.Range(0f, 1f)] public float volume;
+            public AudioClip[] clips; // one is picked at random each play
+            [UnityEngine.Range(0f, 1f)] public float volume = 1f;
         }
 
         public static AudioManager Instance { get; private set; }
@@ -41,6 +39,7 @@ namespace UnityJam.LuckyNumber.Audio
                 Destroy(gameObject);
                 return;
             }
+            Instance = this;
             DontDestroyOnLoad(gameObject);
 
             foreach (Sound s in sounds)
@@ -50,14 +49,13 @@ namespace UnityJam.LuckyNumber.Audio
             }
 
             musicSource.loop = true;
-            musicSource.volume = PlayerPrefs.GetFloat("MusicVol", 1f);
-            sfxSource.volume = PlayerPrefs.GetFloat("SFXVol", 1f);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void Start()
         {
+            if (Instance != this) return; // duplicate, being destroyed
             if (startMusic != null)
                 PlayMusic(startMusic);
         }
@@ -72,10 +70,10 @@ namespace UnityJam.LuckyNumber.Audio
 
         public void PlaySFX(string soundName)
         {
-            if (lookup.TryGetValue(soundName, out Sound s) && s.clip != null)
-                sfxSource.PlayOneShot(s.clip, s.volume);
+            if (lookup.TryGetValue(soundName, out Sound s) && s.clips != null && s.clips.Length > 0)
+                sfxSource.PlayOneShot(s.clips[Random.Range(0, s.clips.Length)], s.volume);
             else
-                Debug.LogWarning($"AudioManager: no sound called \"{soundName}\"");
+                Debug.LogWarning($"AudioManager: no clip for \"{soundName}\"");
         }
 
         public void PlayMusic(AudioClip clip)
@@ -86,23 +84,6 @@ namespace UnityJam.LuckyNumber.Audio
         }
 
         public void StopMusic() => musicSource.Stop();
-
-        // --- volume hook to sliders --- //
-
-        public void SetMusicVolume(float value)
-        {
-            musicSource.volume = value;
-            PlayerPrefs.SetFloat("MusicVolume", value);
-        }
-
-        public void SetSFXVolume(float value)
-        {
-            sfxSource.volume = value;
-            PlayerPrefs.SetFloat("SFXVolume", value);
-        }
-
-        public float MusicVolume => musicSource.volume;
-        public float SFXVolume => sfxSource.volume;
 
         // --- auto button sounds --- //
 
