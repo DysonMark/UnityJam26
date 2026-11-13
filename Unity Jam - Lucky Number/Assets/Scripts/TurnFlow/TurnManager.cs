@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityJam.LuckyNumber.Audio;
 using UnityEngine.UI;
 using UnityJam.LuckyNumber.Interactions;
 using UnityJam.LuckyNumber.Meters;
@@ -175,6 +176,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
 
         public void OnPlayerPickedLucky(int number)
         {
+            AudioManager.Sfx("LuckyPick");
             luckyNumberPanel.SetActive(false);
 
             if (pickingSecond)
@@ -288,7 +290,10 @@ namespace UnityJam.LuckyNumber.TurnFlow
             UpdatePanel();
 
             if (playerLucky == 0)
+            {
                 luckyNumberPanel.SetActive(true);
+                AudioManager.Sfx("LuckyPanel");
+            }
             else
                 StartCoroutine(AIBets());
         }
@@ -297,6 +302,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             playerBet = number;
             betPanel.SetActive(false);
+            AudioManager.Sfx("Bet");
             UpdatePanel();
 
             cleanButton.interactable = true;
@@ -333,6 +339,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             // hide the set not picked while the chosen die rolls
             (usedLoaded ? cleanButton : loadedButton).gameObject.SetActive(false);
             (usedLoaded ? cleanDie : loadedDie).gameObject.SetActive(false);
+            AudioManager.Sfx(usedLoaded ? "RollLoaded" : "RollClean");
             yield return die.Roll(rng, rolledNumber);
             bool jackpot = rolledNumber == playerLucky;
             Land(die.transform, jackpot ? 14f : 6f); // one shake at a time, two would drift the table
@@ -345,6 +352,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             ResolvePayout();
             bool won = money > before;
             yield return aiController.Payout(rolledNumber, aiBets, won ? hudMoneyText.rectTransform : null);
+            if (won) AudioManager.Sfx("MoneyWon");
             if (won) StartCoroutine(Juice.FloatText(floatTextPrefab, hudMoneyText.rectTransform, "+" + (money - before)));
             bool loadedHit = usedLoaded && rolledNumber == playerLucky;
             float rise = DiceMath.StreakRise(config.suspicionPerLuckyRoll, streak, config.streakBonus);
@@ -366,6 +374,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         // punch the die, shake the table, dust + flash where it landed
         private void Land(Transform die, float shake)
         {
+            AudioManager.Sfx("DieLand");
             StartCoroutine(Juice.Punch(die, 0.25f));
             StartCoroutine(Juice.Shake(table, shake, 0.3f));
             landDust.transform.position = die.position;
@@ -378,6 +387,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             jackpotText.text = $"LUCKY {rolledNumber}!";
             jackpotText.gameObject.SetActive(true);
             confetti.Play();
+            AudioManager.Sfx("Jackpot");
             yield return Juice.Punch(jackpotText.transform, 0.6f, 0.3f);
             yield return new WaitForSeconds(jackpotTime);
             jackpotText.gameObject.SetActive(false);
@@ -388,6 +398,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             potText.text = $"POT CARRIES OVER\n<size=140%><color=#E58929>${pot}</color></size>";
             potText.gameObject.SetActive(true);
+            AudioManager.Sfx("PotCarries");
             yield return Juice.Punch(potText.transform, 0.4f, 0.25f);
             yield return new WaitForSeconds(1.6f);
             potText.gameObject.SetActive(false);
@@ -413,6 +424,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
             pot = result.Carryover;
             heat = DiceMath.NextHeat(heat, rolledNumber, playerLucky, result.PlayerPayout);
             lastRoll = rolledNumber;
+            AudioManager.Sfx(result.PlayerPayout > 0 ? "RollWon" : "RollLost");
 
             if (result.PlayerPayout > 0)
                 rollResultText.text = $"Rolled: {rolledNumber} - You win {result.PlayerPayout}!";
@@ -462,6 +474,7 @@ namespace UnityJam.LuckyNumber.TurnFlow
         {
             leaveButton.gameObject.SetActive(false);
             payAnteButton.interactable = false;
+            AudioManager.Sfx("TableWon");
             if (tableIndex >= tables.Length - 1)
             {
                 endScreen.Show(EndReason.Win, money);

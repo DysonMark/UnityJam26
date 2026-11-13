@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityJam.LuckyNumber.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityJam.LuckyNumber.Interactions;
@@ -32,6 +33,7 @@ namespace UnityJam.LuckyNumber.Meters
         {
             shown = Mathf.MoveTowards(shown, suspicion, fillSpeed * Time.deltaTime);
             slider.value = shown;
+            if (AudioManager.Instance != null) AudioManager.Instance.SetSuspicion(shown); // music layers follow the meter
             fill.color = Color.Lerp(calmColor, hotColor, shown);
             percentText.text = $"{Mathf.RoundToInt(shown * 100f)}%";
 
@@ -63,6 +65,7 @@ namespace UnityJam.LuckyNumber.Meters
         {
             int change = Mathf.RoundToInt((suspicion - before) * 100f);
             if (change == 0) return;
+            AudioManager.Sfx(change > 0 ? "SuspicionUp" : "SuspicionDown");
             StartCoroutine(Juice.FloatText(floatTextPrefab, floatFrom, (change > 0 ? "+" : "") + change + "%"));
         }
     }

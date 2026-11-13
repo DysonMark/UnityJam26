@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using NUnit.Framework;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -14,8 +12,8 @@ namespace UnityJam.LuckyNumber.Audio
         public class Sound
         {
             public string name;
-            public AudioClip clip;
-            [UnityEngine.Range(0f, 1f)] public float volume;
+            public AudioClip[] clips; // one is picked at random each play
+            [UnityEngine.Range(0f, 1f)] public float volume = 1f;
         }
 
         public static AudioManager Instance { get; private set; }
@@ -26,13 +24,32 @@ namespace UnityJam.LuckyNumber.Audio
 
         [Header("Sounds")]
         [SerializeField] private List<Sound> sounds = new List<Sound>();
+
+        [Header("Music")]
+        [Tooltip("Base loop. Plays in every scene except the quiet one.")]
         [SerializeField] private AudioClip startMusic;
+        [Tooltip("Loops the exact length of the base loop. Each fades in once suspicion reaches its Layer At value.")]
+        [SerializeField] private AudioClip[] layers = new AudioClip[2];
+        [SerializeField] private float[] layerAt = { 0.3f, 0.65f };
+        [Tooltip("Whole music level, under the Options slider. Leaves room for the SFX.")]
+        [SerializeField, Range(0f, 1f)] private float musicVolume = 0.7f;
+        [Tooltip("Each layer's level relative to the base: base + every layer at 1 is ~6 dB louder and clips.")]
+        [SerializeField, Range(0f, 1f)] private float layerVolume = 0.6f;
+        [SerializeField] private float fadeIn = 1.5f;
+        [SerializeField] private float fadeOut = 2.5f;
+        [SerializeField] private float caughtFade = 0.3f;
+        [SerializeField, Range(0f, 1f)] private float pausedVolume = 0.4f;
+        [Tooltip("Scene with its own music: everything here fades out while it's loaded.")]
+        [SerializeField] private string quietScene = "Intro";
 
         [Header("Buttons")]
         [Tooltip("Automatically plays this sound on every button in the scene.")]
         [SerializeField] private string buttonClickSound = "Click";
 
         private readonly Dictionary<string, Sound> lookup = new Dictionary<string, Sound>();
+        private AudioSource[] layerSources;
+        private float suspicion;
+        private bool caught, quiet;
 
         private void Awake()
         {
@@ -41,6 +58,7 @@ namespace UnityJam.LuckyNumber.Audio
                 Destroy(gameObject);
                 return;
             }
+            Instance = this;
             DontDestroyOnLoad(gameObject);
 
             foreach (Sound s in sounds)
@@ -50,16 +68,60 @@ namespace UnityJam.LuckyNumber.Audio
             }
 
             musicSource.loop = true;
-            musicSource.volume = PlayerPrefs.GetFloat("MusicVol", 1f);
-            sfxSource.volume = PlayerPrefs.GetFloat("SFXVol", 1f);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void Start()
         {
-            if (startMusic != null)
-                PlayMusic(startMusic);
+            if (Instance != this) return; // duplicate, being destroyed
+
+            // base + layers all start on the same audio tick and never stop, so they stay in time; only volumes change
+            double startAt = AudioSettings.dspTime + 0.2;
+            musicSource.Stop();
+            musicSource.volume = 0f;
+            musicSource.clip = startMusic;
+            if (startMusic != null) musicSource.PlayScheduled(startAt);
+
+            layerSources = new AudioSource[layers.Length];
+            for (int i = 0; i < layers.Length; i++)
+            {
+                AudioSource layer = musicSource.gameObject.AddComponent<AudioSource>();
+                layer.outputAudioMixerGroup = musicSource.outputAudioMixerGroup;
+                layer.playOnAwake = false;
+                layer.loop = true;
+                layer.volume = 0f;
+                layer.clip = layers[i];
+                if (layers[i] != null) layer.PlayScheduled(startAt);
+                layerSources[i] = layer;
+            }
+        }
+
+        private void Update()
+        {
+            if (layerSources == null) return;
+            float on = quiet || caught ? 0f : (Menus.PauseMenu.IsPaused ? pausedVolume : 1f) * musicVolume;
+            Fade(musicSource, on);
+            for (int i = 0; i < layerSources.Length; i++)
+                Fade(layerSources[i], suspicion >= layerAt[i] ? on * layerVolume : 0f);
+        }
+
+        private void Fade(AudioSource source, float target)
+        {
+            float time = caught ? caughtFade : target > source.volume ? fadeIn : fadeOut;
+            source.volume = Mathf.MoveTowards(source.volume, target, Time.unscaledDeltaTime / time);
+        }
+
+        // --- music --- //
+
+        // 0..1, from the suspicion meter; the layers follow it
+        public void SetSuspicion(float value) => suspicion = value;
+
+        // cut the music and play the sting; music comes back on the next scene load
+        public void Caught()
+        {
+            caught = true;
+            PlaySFX("Caught");
         }
 
         private void OnDestroy()
@@ -70,44 +132,28 @@ namespace UnityJam.LuckyNumber.Audio
 
         // --- playing sounds --- //
 
+        // game code calls this: safe when no manager is loaded
+        public static void Sfx(string soundName)
+        {
+            if (Instance != null) Instance.PlaySFX(soundName);
+        }
+
         public void PlaySFX(string soundName)
         {
-            if (lookup.TryGetValue(soundName, out Sound s) && s.clip != null)
-                sfxSource.PlayOneShot(s.clip, s.volume);
+            if (lookup.TryGetValue(soundName, out Sound s) && s.clips != null && s.clips.Length > 0)
+                sfxSource.PlayOneShot(s.clips[Random.Range(0, s.clips.Length)], s.volume);
             else
-                Debug.LogWarning($"AudioManager: no sound called \"{soundName}\"");
+                Debug.LogWarning($"AudioManager: no clip for \"{soundName}\"");
         }
-
-        public void PlayMusic(AudioClip clip)
-        {
-            if (musicSource.clip == clip && musicSource.isPlaying) return;
-            musicSource.clip = clip;
-            musicSource.Play();
-        }
-
-        public void StopMusic() => musicSource.Stop();
-
-        // --- volume hook to sliders --- //
-
-        public void SetMusicVolume(float value)
-        {
-            musicSource.volume = value;
-            PlayerPrefs.SetFloat("MusicVolume", value);
-        }
-
-        public void SetSFXVolume(float value)
-        {
-            sfxSource.volume = value;
-            PlayerPrefs.SetFloat("SFXVolume", value);
-        }
-
-        public float MusicVolume => musicSource.volume;
-        public float SFXVolume => sfxSource.volume;
 
         // --- auto button sounds --- //
 
         private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
         {
+            suspicion = 0f;
+            caught = false;
+            quiet = scene.name == quietScene;
+
             if (string.IsNullOrEmpty(buttonClickSound)) return;
 
             // Includes inactive buttons, so menus that start hidden still get the sound.
